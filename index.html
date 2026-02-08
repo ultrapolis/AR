@@ -1,72 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Book Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AR Book Final</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; text-align: center; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; background: #000; }
+        
+        /* Фикс для старых iPhone: растягиваем сцену на весь экран */
+        a-scene {
+            width: 100vw;
+            height: 100vh;
+        }
+
         #btn { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            z-index: 1000; padding: 25px; background: #28a745; color: white; 
-            border: none; border-radius: 15px; font-size: 20px; font-weight: bold;
+            z-index: 10000; padding: 20px 40px; background: #28a745; color: #fff; 
+            border: none; border-radius: 12px; font-weight: bold; font-size: 20px;
         }
-        #status { position: fixed; bottom: 20px; width: 100%; font-size: 14px; background: rgba(0,0,0,0.7); }
+
+        #status {
+            position: fixed; top: 10px; width: 100%; text-align: center;
+            color: #00ff00; z-index: 9999; font-family: sans-serif; 
+            font-weight: bold; text-shadow: 2px 2px 4px #000;
+        }
+
+        /* Убираем лишние рамки */
+        .mindar-ui-scanning, .mindar-ui-loading { display: none !important; }
     </style>
 </head>
 <body>
     <div id="status">Нажмите кнопку START</div>
-    <button id="btn">START AR</button>
+    <button id="btn">START</button>
 
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-scene 
+        id="scene"
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+        embedded 
+        color-space="sRGB" 
+        renderer="colorManagement: true, physicallyCorrectLights" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false">
+        
         <a-assets>
             <video id="v" src="./tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
         </a-assets>
+
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-        <a-entity mindar-image-target="targetIndex: 0">
-            <a-video src="#v" width="1" height="0.6"></a-video>
+
+        <a-entity id="target" mindar-image-target="targetIndex: 0">
+            <a-video src="#v" width="1" height="0.6" position="0 0 0"></a-video>
         </a-entity>
     </a-scene>
 
     <script>
-        const btn = document.getElementById('btn');
-        const status = document.getElementById('status');
+        const btn = document.querySelector('#btn');
+        const status = document.querySelector('#status');
         const sceneEl = document.querySelector('a-scene');
+        const video = document.querySelector('#v');
 
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             btn.style.display = 'none';
-            status.innerHTML = "Запрашиваю камеру...";
-
-            try {
-                // Прямой запрос камеры у Android (это точно вызовет окно разрешения)
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                // Если разрешили — закрываем тестовый поток и даем управление MindAR
-                stream.getTracks().forEach(track => track.stop());
-                
-                status.innerHTML = "Запуск AR...";
+            status.innerHTML = "Инициализация...";
+            
+            // Прогрев видео и старт AR
+            video.play().then(() => {
+                video.pause();
                 sceneEl.systems['mindar-image-system'].start();
-            } catch (err) {
-                status.innerHTML = "ОШИБКА: " + err.name + ". Проверьте разрешения Chrome.";
-            }
+            }).catch(() => {
+                sceneEl.systems['mindar-image-system'].start();
+            });
         });
 
         sceneEl.addEventListener("arReady", () => {
-            status.innerHTML = "ГОТОВО! Наведите на картинку";
+            status.innerHTML = "ГОТОВО! Наведите на фото";
         });
 
-        sceneEl.addEventListener("arError", (e) => {
-            status.innerHTML = "AR Error: " + e.detail.error;
-        });
-
-        const target = document.querySelector('[mindar-image-target]');
-        const video = document.querySelector('#v');
+        const target = document.querySelector('#target');
         target.addEventListener("targetFound", () => {
-            status.innerHTML = "ОБЪЕКТ НАЙДЕН!";
+            status.innerHTML = "ВИЖУ ФОТО!";
             video.play();
         });
-        target.addEventListener("targetLost", () => video.pause());
+        target.addEventListener("targetLost", () => {
+            status.innerHTML = "Поиск...";
+            video.pause();
+        });
     </script>
 </body>
 </html>
