@@ -1,56 +1,89 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AR Final Fix</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; }
-      /* Индикатор загрузки */
-      #loading {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: white; display: flex; align-items: center; justify-content: center; z-index: 999;
-      }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #btn { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            z-index: 10000; padding: 25px 50px; background: #007bff; color: #fff; 
+            border: none; border-radius: 15px; font-weight: bold; font-size: 20px;
+        }
+        #status {
+            position: fixed; bottom: 20px; width: 100%; text-align: center;
+            color: #fff; z-index: 9999; background: rgba(0,0,0,0.7); padding: 10px 0;
+        }
     </style>
-  </head>
-  <body>
-    <div id="loading">Загрузка магии...</div>
+</head>
+<body>
+    <div id="status">Нажмите START</div>
+    <button id="btn">START</button>
 
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiScanning: yes;" 
-      color-space="sRGB" 
-      renderer="colorManagement: true, physicallyCorrectLights" 
-      vr-mode-ui="enabled: false" 
-      device-orientation-permission-ui="enabled: false">
-      
-      <a-assets>
-        <video id="cityVideo" src="./tree.mp4" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
-      </a-assets>
+        id="scene"
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF:0.001; filterBeta: 0.01;" 
+        embedded 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <video id="v" src="./tree.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+        </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity id="example-target" mindar-image-target="targetIndex: 0">
-        <a-video src="#cityVideo" position="0 0 0" height="0.552" width="1"></a-video>
-      </a-entity>
+        <a-entity id="target" mindar-image-target="targetIndex: 0">
+            <a-video src="#v" width="1" height="0.6" position="0 0 0"></a-video>
+        </a-entity>
     </a-scene>
 
     <script>
-      const sceneEl = document.querySelector('a-scene');
-      const video = document.querySelector('#cityVideo');
-      const loading = document.querySelector('#loading');
+        const btn = document.querySelector('#btn');
+        const status = document.querySelector('#status');
+        const sceneEl = document.querySelector('a-scene');
+        const video = document.querySelector('#v');
 
-      // Скрываем индикатор, когда AR готова
-      sceneEl.addEventListener("arReady", (event) => {
-        loading.style.display = "none";
-      });
+        btn.addEventListener('click', () => {
+            btn.style.display = 'none';
+            status.innerHTML = "Запуск камеры (подождите 5 сек)...";
+            
+            // Запускаем систему MindAR
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            if (arSystem) {
+                arSystem.start(); 
+            } else {
+                status.innerHTML = "Критическая ошибка: AR-система не найдена";
+            }
 
-      // Логика: видео играет только когда мы видим картинку
-      const exampleTarget = document.querySelector('#example-target');
-      exampleTarget.addEventListener("targetFound", event => {
-        video.play();
-      });
-      exampleTarget.addEventListener("targetLost", event => {
-        video.pause();
-      });
+            // Принудительно запускаем видео, чтобы оно было готово
+            video.play().then(() => {
+                video.pause();
+            }).catch(() => {});
+        });
+
+        // Если камера успешно включилась
+        sceneEl.addEventListener("arReady", () => {
+            status.innerHTML = "ГОТОВО! Наведите на картинку";
+        });
+
+        // Если возникла любая системная ошибка
+        sceneEl.addEventListener("arError", (e) => {
+            status.innerHTML = "ОШИБКА: " + e.detail.error;
+        });
+
+        const target = document.querySelector('#target');
+        target.addEventListener("targetFound", () => {
+            status.innerHTML = "ВИЖУ ФОТО!";
+            video.play();
+        });
+        target.addEventListener("targetLost", () => {
+            status.innerHTML = "ПОИСК...";
+            video.pause();
+        });
     </script>
-  </body>
+</body>
 </html>
