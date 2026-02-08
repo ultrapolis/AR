@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      /* Индикатор загрузки */
+      #loading {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: white; display: flex; align-items: center; justify-content: center; z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">Загрузка магии...</div>
+
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiLoading: no; uiScanning: yes;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video id="cityVideo" src="./tree.mp4" preload="auto" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="example-target" mindar-image-target="targetIndex: 0">
+        <a-video src="#cityVideo" position="0 0 0" height="0.552" width="1"></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const sceneEl = document.querySelector('a-scene');
+      const video = document.querySelector('#cityVideo');
+      const loading = document.querySelector('#loading');
+
+      // Скрываем индикатор, когда AR готова
+      sceneEl.addEventListener("arReady", (event) => {
+        loading.style.display = "none";
+      });
+
+      // Логика: видео играет только когда мы видим картинку
+      const exampleTarget = document.querySelector('#example-target');
+      exampleTarget.addEventListener("targetFound", event => {
+        video.play();
+      });
+      exampleTarget.addEventListener("targetLost", event => {
+        video.pause();
+      });
+    </script>
+  </body>
+</html>
