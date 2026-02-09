@@ -108,12 +108,6 @@ closeBtn.addEventListener('click', () => {
     status.innerHTML = "Объект удален.";
 });
 
-closeBtn.addEventListener('click', () => {
-    worldContainer.setAttribute('visible', 'false');
-    closeBtn.style.display = 'none';
-    status.innerHTML = "Объект удален.";
-});
-
 // 7. УПРАВЛЕНИЕ ВИДЕО
 playBtn.addEventListener('click', () => {
     if (video.paused) { video.play(); playBtn.innerHTML = "PAUSE"; }
@@ -149,6 +143,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
