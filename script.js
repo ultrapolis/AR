@@ -77,17 +77,30 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
+    status.innerHTML = "Объект зафиксирован в комнате!";
+    
+    // Получаем текущие координаты камеры в пространстве
+    const cameraEl = document.querySelector('a-camera');
+    const worldPos = new THREE.Vector3();
+    const worldDir = new THREE.Vector3();
+    
+    cameraEl.object3D.getWorldPosition(worldPos);
+    cameraEl.object3D.getWorldDirection(worldDir);
+    
+    // Математика: Позиция камеры + (Направление * -2 метра)
+    // Мы используем минус, потому что в Three.js камера "смотрит" в -Z
+    worldContainer.setAttribute('position', {
+        x: worldPos.x - (worldDir.x * 2),
+        y: worldPos.y - (worldDir.y * 2), 
+        z: worldPos.z - (worldDir.z * 2)
+    });
 
-    // Ставим контейнер прямо перед собой (0 0 -3 — это 3 метра перед глазами)
-
-    worldContainer.setAttribute('position', '0 0 -3'); 
+    // Поворачиваем модель к себе лицом
+    worldContainer.setAttribute('rotation', cameraEl.getAttribute('rotation'));
 
     worldContainer.setAttribute('visible', 'true');
-
-    freeModel.setAttribute('scale', '5 5 5'); // Делаем крупной
-
+    freeModel.setAttribute('scale', '1 1 1'); // Сделаем размер нормальным (не огромным)
     closeBtn.style.display = 'block';
-
 }
 
 closeBtn.addEventListener('click', () => {
@@ -137,6 +150,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
