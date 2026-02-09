@@ -4,26 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AR Book Project</title>
-    
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="status">Загрузка ресурсов...</div>
     <button id="btn">START</button>
 
- <a-scene 
+    <a-scene 
         id="scene"
         mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 0.01;" 
-        embedded 
-        color-space="sRGB" 
+        embedded color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights: false, exposure: 2.0;" 
-        vr-mode-ui="enabled: false" 
-        device-orientation-permission-ui="enabled: false"
-        xrextras-gesture-detector> <a-entity light="type: ambient; color: #FFF; intensity: 2.0"></a-entity>
+        vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+        
+        <a-entity light="type: ambient; color: #FFF; intensity: 2.0"></a-entity>
         <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="0 1 1"></a-entity>
 
         <a-assets>
@@ -42,19 +38,13 @@
             <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0.5" rotation="90 0 0"></a-gltf-model>
         </a-entity>
 
-        <a-entity id="target2" mindar-image-target="targetIndex: 2">
-             <a-gltf-model 
-                id="world-model" 
-                src="#thirdModel" 
-                scale="1 1 1" 
-                position="0 0 1" 
-                rotation="90 0 0">
-            </a-gltf-model>
-        </a-entity>
-    </a-scene>
+        <a-entity id="target2" mindar-image-target="targetIndex: 2"></a-entity>
 
+        <a-entity id="world-container" visible="false">
+            <a-gltf-model id="free-model" src="#thirdModel" scale="1 1 1" rotation="0 0 0"></a-gltf-model>
+        </a-entity>
+
+    </a-scene>
     <script src="script.js"></script>
 </body>
 </html>
-
-
