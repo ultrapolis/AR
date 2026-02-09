@@ -77,21 +77,17 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ИЩИ КРАСНЫЙ КУБ ПЕРЕД СОБОЙ!";
+
+    // Ставим контейнер прямо перед собой (0 0 -3 — это 3 метра перед глазами)
+
+    worldContainer.setAttribute('position', '0 0 -3'); 
+
     worldContainer.setAttribute('visible', 'true');
-    
-    // Ставим модель совсем близко (1 метр), чтобы не промахнуться
-    worldContainer.setAttribute('position', '0 0 -1');
-    freeModel.setAttribute('scale', '0.2 0.2 0.2'); 
-    
-    // СОЗДАЕМ ТЕСТОВЫЙ КУБ
-    let testBox = document.createElement('a-box');
-    testBox.setAttribute('color', 'red');
-    testBox.setAttribute('scale', '0.2 0.2 0.2');
-    testBox.setAttribute('position', '0.2 0 -1.1'); // Чуть правее модели
-    sceneEl.appendChild(testBox);
-    
+
+    freeModel.setAttribute('scale', '5 5 5'); // Делаем крупной
+
     closeBtn.style.display = 'block';
+
 }
 
 closeBtn.addEventListener('click', () => {
@@ -141,6 +137,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
