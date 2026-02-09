@@ -75,32 +75,26 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН В КОМНАТЕ!";
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН! ОГЛЯНИСЬ ВОКРУГ";
     
-    // Показываем контейнер
+    // 1. Показываем
     worldContainer.setAttribute('visible', 'true');
-    freeModel.setAttribute('scale', '1 1 1'); 
-
-    // МАГИЯ: Переносим модель в корень сцены, чтобы она не исчезала
+    
+    // 2. Вырываем в корень сцены
     sceneEl.appendChild(worldContainer);
 
-    // ФИКСИРУЕМ ПОЗИЦИЮ ПЕРЕД КАМЕРОЙ
-    const cameraEl = document.querySelector('a-camera');
-    const worldPos = new THREE.Vector3();
-    const worldDir = new THREE.Vector3();
+    // 3. УПРОЩЕННАЯ ПОЗИЦИЯ: 
+    // Ставим модель в "абсолютный ноль" или чуть впереди.
+    // На многих телефонах в WebAR "ноль" — это место, где ты открыла сайт.
+    worldContainer.setAttribute('position', '0 0 -2'); 
     
-    cameraEl.object3D.getWorldPosition(worldPos);
-    cameraEl.object3D.getWorldDirection(worldDir);
+    // Сделаем масштаб побольше для теста
+    freeModel.setAttribute('scale', '2 2 2'); 
 
-    // Ставим в 2 метрах перед телефоном
-    worldContainer.setAttribute('position', {
-        x: worldPos.x - (worldDir.x * 2),
-        y: worldPos.y - (worldDir.y * 2),
-        z: worldPos.z - (worldDir.z * 2)
-    });
-
-    // Поворачиваем "лицом" к нам
-    worldContainer.setAttribute('rotation', cameraEl.getAttribute('rotation'));
+    // 4. Добавим свет ПРЯМО В КОНТЕЙНЕР (вдруг там темно?)
+    let light = document.createElement('a-entity');
+    light.setAttribute('light', 'type: point; intensity: 2; distance: 50');
+    worldContainer.appendChild(light);
 
     closeBtn.style.display = 'block';
 }
@@ -157,3 +151,4 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
