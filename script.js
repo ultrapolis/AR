@@ -83,22 +83,36 @@ window.addEventListener('mousemove', (e) => {
     });
 });
 
-// Для iPhone (сенсор)
+// Для iPhone (сенсор) - ВРАЩЕНИЕ ПО ДВУМ ОСЯМ
 window.addEventListener('touchstart', (e) => {
     isDragging = true;
-    previousMousePosition = { x: e.touches[0].clientX };
+    previousMousePosition = { 
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY 
+    };
 });
+
 window.addEventListener('touchend', () => { isDragging = false; });
+
 window.addEventListener('touchmove', (e) => {
     if (!isDragging || !model) return;
     const touch = e.touches[0];
+    
+    // Считаем, на сколько сдвинулся палец по горизонтали и вертикали
     const deltaX = touch.clientX - previousMousePosition.x;
+    const deltaY = touch.clientY - previousMousePosition.y;
     
     let currentRotation = model.getAttribute('rotation');
+    
     model.setAttribute('rotation', {
-        x: currentRotation.x,
-        y: currentRotation.y + deltaX * 0.8,
+        x: currentRotation.x + deltaY * 0.5, // Наклон вперед-назад
+        y: currentRotation.y + deltaX * 0.8, // Поворот влево-вправо
         z: currentRotation.z
     });
-    previousMousePosition = { x: touch.clientX };
+    
+    previousMousePosition = { 
+        x: touch.clientX, 
+        y: touch.clientY 
+    };
 });
+
