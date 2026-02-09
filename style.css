@@ -2,6 +2,7 @@ body {
     margin: 0; 
     overflow: hidden; 
     background: #000; 
+    touch-action: none; /* Это важно! */
 }
 
 /* Фикс для старых iPhone: растягиваем сцену */
@@ -49,3 +50,4 @@ a-scene {
     display: none !important; 
 
 }
+
