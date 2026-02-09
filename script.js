@@ -75,33 +75,30 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ЗАКРЕПЛЕНО! ТЕПЕРЬ МОЖНО УБРАТЬ КНИГУ";
+    status.innerHTML = "РЕЖИМ ОСМОТРА (Крутите модель пальцем)";
     
-    // 1. Показываем контейнер
+    // 1. Показываем модель (она внутри камеры, поэтому всегда перед глазами)
     worldContainer.setAttribute('visible', 'true');
-    
-    // 2. ХАК: Удаляем у таргета способность управлять видимостью этого объекта
-    // Мы просто "ломаем" связь MindAR с этим контейнером
-    const t2 = document.querySelector('#target2');
-    
-    // Перехватываем событие потери цели и запрещаем ему скрывать модель
-    t2.addEventListener("targetLost", (e) => {
-        // Мы просто не даем контейнеру стать invisible
-        worldContainer.setAttribute('visible', 'true'); 
-        status.innerHTML = "Маркер потерян, но объект остался!";
-    });
-
     closeBtn.style.display = 'block';
+
+    // 2. ВЫКЛЮЧАЕМ камеру (делаем видео прозрачным)
+    const arVideo = document.querySelector('video');
+    if (arVideo) {
+        arVideo.style.opacity = "0"; 
+    }
 }
 
-// Кнопка закрытия модели
+// Обработчик кнопки закрытия (крестика)
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
-    status.innerHTML = "Объект удален. Наведите на маркер снова.";
-    
-    // Возвращаем модель "домой" в таргет, чтобы можно было вызвать снова
-    document.querySelector('#target2').appendChild(worldContainer);
+    status.innerHTML = "Возврат к книге...";
+
+    // ВКЛЮЧАЕМ камеру обратно
+    const arVideo = document.querySelector('video');
+    if (arVideo) {
+        arVideo.style.opacity = "1";
+    }
 });
 
 // 7. УПРАВЛЕНИЕ ВИДЕО КНОПКОЙ
@@ -146,6 +143,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
