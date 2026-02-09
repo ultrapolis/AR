@@ -58,46 +58,23 @@ t1.addEventListener("targetFound", () => {
     status.innerHTML = "Крутите модель пальцем!"; 
 });
 
-// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ
+// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ (Упрощенный режим)
 const t2 = document.querySelector('#target2');
 t2.addEventListener("targetFound", () => {
     if (!freeModel.getAttribute('src')) {
         status.innerHTML = "Загрузка 3D объекта...";
-        freeModel.setAttribute('src', './model2.glb'); // ПРОВЕРЬ ИМЯ ФАЙЛА ТУТ!
-        
+        freeModel.setAttribute('src', './model2.glb'); 
         freeModel.addEventListener('model-loaded', () => {
-            activateWorldModel();
+            status.innerHTML = "Объект зафиксирован!";
+            worldContainer.setAttribute('visible', 'true');
+            closeBtn.style.display = 'block';
         }, { once: true });
     } else {
-        activateWorldModel();
+        status.innerHTML = "Объект зафиксирован!";
+        worldContainer.setAttribute('visible', 'true');
+        closeBtn.style.display = 'block';
     }
 });
-
-function activateWorldModel() {
-    status.innerHTML = "Объект зафиксирован в комнате!";
-    
-    // Получаем текущее положение камеры
-    const cameraEl = document.querySelector('a-camera');
-    const worldPos = new THREE.Vector3();
-    const worldDir = new THREE.Vector3();
-    
-    cameraEl.object3D.getWorldPosition(worldPos);
-    cameraEl.object3D.getWorldDirection(worldDir);
-    
-    // Ставим модель ровно ПЕРЕД камерой на расстоянии 3 метров
-    // Мы берем позицию камеры и вычитаем направление (так работает THREE.js)
-    worldContainer.setAttribute('position', {
-        x: worldPos.x - (worldDir.x * 3), 
-        y: worldPos.y - (worldDir.y * 3), 
-        z: worldPos.z - (worldDir.z * 3) 
-    });
-
-    // Делаем модель крупнее, чтобы точно не пропустить
-    freeModel.setAttribute('scale', '5 5 5'); 
-    
-    worldContainer.setAttribute('visible', 'true');
-    closeBtn.style.display = 'block';
-}
 
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
@@ -140,3 +117,4 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
