@@ -63,7 +63,7 @@ const t2 = document.querySelector('#target2');
 t2.addEventListener("targetFound", () => {
     if (!freeModel.getAttribute('src')) {
         status.innerHTML = "Загрузка 3D объекта...";
-        freeModel.setAttribute('src', './model2.glb'); 
+        freeModel.setAttribute('src', './model1.glb'); 
         freeModel.addEventListener('model-loaded', () => {
             status.innerHTML = "Объект зафиксирован!";
             worldContainer.setAttribute('visible', 'true');
@@ -117,4 +117,5 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
