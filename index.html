@@ -42,6 +42,9 @@
         renderer="colorManagement: true, physicallyCorrectLights" 
         vr-mode-ui="enabled: false" 
         device-orientation-permission-ui="enabled: false">
+
+        <a-entity light="type: ambient; color: #BBB; intensity: 1.5"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 0.8" position="-1 1 1"></a-entity>
         
         <a-assets>
             <video id="v" src="./tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -134,4 +137,5 @@
     </script>
 </body>
 </html>
+
 
