@@ -17,7 +17,7 @@ closeBtn.id = 'close-btn';
 closeBtn.innerHTML = '✕';
 document.body.appendChild(closeBtn);
 
-// 2. Показ кнопки START после загрузки
+// 2. Показ кнопки START
 sceneEl.addEventListener('renderstart', () => {
     status.innerHTML = "Всё готово!";
     btn.style.display = 'block';
@@ -48,7 +48,6 @@ t0.addEventListener("targetFound", () => {
     playBtn.style.display = 'block'; 
 });
 t0.addEventListener("targetLost", () => { 
-    status.innerHTML = "Ищу страницу...";
     video.pause(); 
     playBtn.style.display = 'none'; 
 });
@@ -59,12 +58,12 @@ t1.addEventListener("targetFound", () => {
     status.innerHTML = "Крутите модель пальцем!"; 
 });
 
-// 6. СТРАНИЦА 3: ЛЕНИВАЯ ЗАГРУЗКА
+// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ
 const t2 = document.querySelector('#target2');
 t2.addEventListener("targetFound", () => {
     if (!freeModel.getAttribute('src')) {
         status.innerHTML = "Загрузка 3D объекта...";
-        freeModel.setAttribute('src', './model2.glb');
+        freeModel.setAttribute('src', './model2.glb'); // ПРОВЕРЬ ИМЯ ФАЙЛА ТУТ!
         
         freeModel.addEventListener('model-loaded', () => {
             activateWorldModel();
@@ -76,15 +75,25 @@ t2.addEventListener("targetFound", () => {
 
 function activateWorldModel() {
     status.innerHTML = "Объект зафиксирован в комнате!";
+    
+    // Получаем текущее положение камеры
     const cameraEl = document.querySelector('a-camera');
     const worldPos = new THREE.Vector3();
-    cameraEl.object3D.getWorldPosition(worldPos);
+    const worldDir = new THREE.Vector3();
     
+    cameraEl.object3D.getWorldPosition(worldPos);
+    cameraEl.object3D.getWorldDirection(worldDir);
+    
+    // Ставим модель ровно ПЕРЕД камерой на расстоянии 3 метров
+    // Мы берем позицию камеры и вычитаем направление (так работает THREE.js)
     worldContainer.setAttribute('position', {
-        x: worldPos.x, 
-        y: worldPos.y - 0.5, 
-        z: worldPos.z - 2 
+        x: worldPos.x - (worldDir.x * 3), 
+        y: worldPos.y - (worldDir.y * 3), 
+        z: worldPos.z - (worldDir.z * 3) 
     });
+
+    // Делаем модель крупнее, чтобы точно не пропустить
+    freeModel.setAttribute('scale', '5 5 5'); 
     
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
@@ -102,7 +111,7 @@ playBtn.addEventListener('click', () => {
     else { video.pause(); playBtn.innerHTML = "PLAY"; }
 });
 
-// 8. УНИВЕРСАЛЬНОЕ ВРАЩЕНИЕ ПАЛЬЦЕМ
+// 8. ВРАЩЕНИЕ ПАЛЬЦЕМ
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
