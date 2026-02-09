@@ -58,22 +58,36 @@ t1.addEventListener("targetFound", () => {
     status.innerHTML = "Крутите модель пальцем!"; 
 });
 
-// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ (Упрощенный режим)
+// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ
 const t2 = document.querySelector('#target2');
 t2.addEventListener("targetFound", () => {
+    // 1. Сначала проверяем, есть ли у нас файл модели
     if (!freeModel.getAttribute('src')) {
         status.innerHTML = "Загрузка 3D объекта...";
-        freeModel.setAttribute('src', './model1.glb'); 
+        freeModel.setAttribute('src', './model2.glb'); // ВОТ ОНА, ВЕРНУЛАСЬ!
+        
         freeModel.addEventListener('model-loaded', () => {
-            status.innerHTML = "Объект зафиксирован!";
-            worldContainer.setAttribute('visible', 'true');
-            closeBtn.style.display = 'block';
+            status.innerHTML = "Объект появился!";
+            showWorldModel();
         }, { once: true });
     } else {
-        status.innerHTML = "Объект зафиксирован!";
-        worldContainer.setAttribute('visible', 'true');
-        closeBtn.style.display = 'block';
+        status.innerHTML = "Объект появился!";
+        showWorldModel();
     }
+});
+
+function showWorldModel() {
+    // Ставим контейнер прямо перед собой (0 0 -3 — это 3 метра перед глазами)
+    worldContainer.setAttribute('position', '0 0 -3'); 
+    worldContainer.setAttribute('visible', 'true');
+    freeModel.setAttribute('scale', '5 5 5'); // Делаем крупной
+    closeBtn.style.display = 'block';
+}
+
+closeBtn.addEventListener('click', () => {
+    worldContainer.setAttribute('visible', 'false');
+    closeBtn.style.display = 'none';
+    status.innerHTML = "Объект удален.";
 });
 
 closeBtn.addEventListener('click', () => {
@@ -117,5 +131,6 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
