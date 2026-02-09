@@ -27,7 +27,11 @@
             <a-asset-item id="myModel" src="./model1.glb"></a-asset-item>
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false">
+            <a-entity id="world-container" visible="false" position="0 0 -3">
+                <a-gltf-model id="free-model" scale="5 5 5" rotation="0 0 0"></a-gltf-model>
+            </a-entity>
+        </a-camera>
 
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
             <a-video src="#v" width="1" height="1" position="0 0 0"></a-video>
@@ -39,13 +43,10 @@
 
         <a-entity id="target2" mindar-image-target="targetIndex: 2"></a-entity>
 
-        <a-entity id="world-container" visible="false">
-            <a-gltf-model id="free-model" scale="1 1 1" rotation="0 0 0"></a-gltf-model>
-        </a-entity>
-
     </a-scene>
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
