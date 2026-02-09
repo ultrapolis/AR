@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8">
@@ -37,17 +37,17 @@
             <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0.5" rotation="90 0 0"></a-gltf-model>
         </a-entity>
         
-        <a-entity id="target2" mindar-image-target="targetIndex: 2"></a-entity>
-
-        <a-entity id="world-container" visible="false">
-             <a-entity light="type: point; intensity: 2" position="0 2 2"></a-entity>
-             <a-gltf-model id="free-model" scale="1 1 1"></a-gltf-model>
-        </a-entity>
+        <a-entity id="target2" mindar-image-target="targetIndex: 2">
+             <a-entity id="world-container" visible="false" position="0 0 0">
+                <a-gltf-model id="free-model" scale="1 1 1" position="0 0 0.5" rotation="90 0 0"></a-gltf-model>
+                </a-entity>
+         </a-entity>
     
     </a-scene>
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
