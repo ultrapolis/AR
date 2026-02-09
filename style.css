@@ -1,53 +1,23 @@
-body { 
-    margin: 0; 
-    overflow: hidden; 
-    background: #000; 
-    touch-action: none; /* Это важно! */
-}
+body { margin: 0; overflow: hidden; background: #000; touch-action: none; }
+a-scene { width: 100vw; height: 100vh; }
 
-/* Фикс для старых iPhone: растягиваем сцену */
-a-scene {
-    width: 100vw;
-    height: 100vh;
-}
-
-/* Кнопка START: изначально скрыта */
 #btn { 
-    display: none; 
-    position: fixed; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    z-index: 10000; 
-    padding: 20px 40px; 
-    background: #28a745; 
-    color: #fff; 
-    border: none; 
-    border-radius: 12px; 
-    font-weight: bold; 
-    font-size: 20px;
-    cursor: pointer;
+    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    z-index: 10000; padding: 20px 40px; background: #28a745; color: #fff; 
+    border: none; border-radius: 12px; font-weight: bold; font-size: 20px;
 }
 
-/* Статус загрузки */
 #status {
-    position: fixed; 
-    top: 0;           /* Прижмем к самому верху */
-    left: 0;
-    width: 100%; 
-    padding: 10px 0;  /* Добавим немного отступа */
-    text-align: center;
-    color: #00ff00; 
-    z-index: 10002;   /* Теперь он выше всех системных надписей */
-    font-family: sans-serif; 
-    font-weight: bold; 
-    text-shadow: 2px 2px 4px #000;
-    background: rgba(0, 0, 0, 0.6); /* Полупрозрачный черный фон, чтобы текст читался */
+    position: fixed; top: 0; left: 0; width: 100%; padding: 10px 0;
+    text-align: center; color: #00ff00; z-index: 10002; font-family: sans-serif; 
+    font-weight: bold; text-shadow: 2px 2px 4px #000; background: rgba(0, 0, 0, 0.6);
 }
 
-/* Прячем системные иконки загрузки MindAR */
-.mindar-ui-scanning, .mindar-ui-loading { 
-    display: none !important; 
-
+/* Кнопка удаления объекта */
+#close-btn {
+    display: none; position: fixed; bottom: 30px; right: 20px; z-index: 10001;
+    padding: 15px; background: rgba(255, 0, 0, 0.7); color: white; border: none;
+    border-radius: 50%; width: 60px; height: 60px; font-weight: bold; font-size: 24px;
 }
 
+.mindar-ui-scanning, .mindar-ui-loading { display: none !important; }
