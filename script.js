@@ -116,3 +116,17 @@ window.addEventListener('touchmove', (e) => {
     };
 });
 
+const t2 = document.querySelector('#target2');
+const worldModel = document.querySelector('#world-model');
+
+t2.addEventListener("targetFound", () => {
+    status.innerHTML = "Объект зафиксирован в пространстве!";
+    // Когда нашли картинку, мы можем "отвязать" модель или просто оставить её видимой
+});
+
+t2.addEventListener("targetLost", () => {
+    // В ОБЫЧНОМ режиме тут модель исчезает. 
+    // Если ты ХОЧЕШЬ, чтобы она НЕ ИСЧЕЗАЛА, когда ты уводишь камеру:
+    // Просто не пиши сюда ничего, но MindAR по умолчанию её скроет.
+    status.innerHTML = "Потерян маркер, но объект должен быть где-то тут...";
+});
