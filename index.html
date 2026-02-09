@@ -3,35 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AR Book Final</title>
+    <title>AR Book Project</title>
+    
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; }
-        
-        /* ТВОЙ ВАЖНЫЙ ФИКС: растягиваем сцену на весь экран */
-        a-scene {
-            width: 100vw;
-            height: 100vh;
-        }
-
-        #btn { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            z-index: 10000; padding: 20px 40px; background: #28a745; color: #fff; 
-            border: none; border-radius: 12px; font-weight: bold; font-size: 20px;
-        }
-
-        #status {
-            position: fixed; top: 10px; width: 100%; text-align: center;
-            color: #00ff00; z-index: 9999; font-family: sans-serif; 
-            font-weight: bold; text-shadow: 2px 2px 4px #000;
-        }
-
-        .mindar-ui-scanning, .mindar-ui-loading { display: none !important; }
-    </style>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="status">Нажмите кнопку START</div>
+    <div id="status">Загрузка ресурсов...</div>
     <button id="btn">START</button>
 
     <a-scene 
@@ -39,19 +19,15 @@
         mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 0.01;" 
         embedded 
         color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights" 
+        renderer="colorManagement: true, physicallyCorrectLights: false, exposure: 2.0;" 
         vr-mode-ui="enabled: false" 
         device-orientation-permission-ui="enabled: false">
-
-        #<a-entity light="type: ambient; color: #BBB; intensity: 1.5"></a-entity>
-        #<a-entity light="type: directional; color: #FFF; intensity: 0.8" position="-1 1 1"></a-entity>
-
+        
         <a-entity light="type: ambient; color: #FFF; intensity: 2.0"></a-entity>
         <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="0 1 1"></a-entity>
-        
+
         <a-assets>
             <video id="v" src="./tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
-            
             <a-asset-item id="myModel" src="./model1.glb"></a-asset-item>
         </a-assets>
 
@@ -62,86 +38,10 @@
         </a-entity>
 
         <a-entity id="target1" mindar-image-target="targetIndex: 1">
-            <a-gltf-model src="#myModel" 
-                scale="1 1 1" 
-                position="0 0 0" 
-                rotation="0 0 0">
-            </a-gltf-model>
+            <a-gltf-model src="#myModel" scale="1 1 1" position="0 0 0" rotation="90 0 0"></a-gltf-model>
         </a-entity>
     </a-scene>
 
-    <script>
-        const btn = document.querySelector('#btn');
-        const status = document.querySelector('#status');
-        const sceneEl = document.querySelector('a-scene');
-        const video = document.querySelector('#v');
-
-        // Создаем кнопку Плей/Пауза программно, чтобы она была красивой
-        const playBtn = document.createElement('button');
-        playBtn.innerHTML = "PAUSE";
-        playBtn.style.cssText = "position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:10001; padding:15px 30px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:30px; display:none; font-weight:bold;";
-        document.body.appendChild(playBtn);
-
-        btn.addEventListener('click', () => {
-            btn.style.display = 'none';
-            status.innerHTML = "Инициализация...";
-            
-            video.play().then(() => {
-                video.pause();
-                sceneEl.systems['mindar-image-system'].start();
-            }).catch(() => {
-                sceneEl.systems['mindar-image-system'].start();
-            });
-        });
-
-        sceneEl.addEventListener("arReady", () => {
-            status.innerHTML = "ГОТОВО! Наведите на страницу";
-        });
-
-        // ЛОГИКА ДЛЯ СТРАНИЦЫ С ВИДЕО
-        const t0 = document.querySelector('#target0');
-        
-        t0.addEventListener("targetFound", () => {
-            status.innerHTML = "Страница 1 оживает...";
-            
-            video.currentTime = 0; // ВОТ ЭТА СТРОЧКА возвращает видео в начало!
-            video.play();
-            
-            playBtn.style.display = 'block'; // Показываем кнопку управления
-            playBtn.innerHTML = "PAUSE";
-        });
-
-        t0.addEventListener("targetLost", () => {
-            status.innerHTML = "Ищу страницу...";
-            video.pause();
-            playBtn.style.display = 'none'; // Прячем кнопку, если потеряли картинку
-        });
-
-        // Обработка клика по кнопке Плей/Пауза
-        playBtn.addEventListener('click', () => {
-            if (video.paused) {
-                video.play();
-                playBtn.innerHTML = "PAUSE";
-            } else {
-                video.pause();
-                playBtn.innerHTML = "PLAY";
-            }
-        });
-
-        // ЛОГИКА ДЛЯ ВТОРОЙ СТРАНИЦЫ (МОДЕЛЬ)
-        const t1 = document.querySelector('#target1');
-        t1.addEventListener("targetFound", () => {
-            status.innerHTML = "Загружаю 3D объект...";
-            playBtn.style.display = 'none'; // Кнопка видео не нужна для модели
-        });
-        t1.addEventListener("targetLost", () => {
-            status.innerHTML = "Ищу страницу...";
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
