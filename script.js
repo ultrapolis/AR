@@ -104,8 +104,9 @@ function showWorldModel() {
 
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
+    // Чтобы можно было вызвать модель снова, вернем ее в таргет (по желанию)
+    // Но для защиты проще просто скрыть.
     closeBtn.style.display = 'none';
-    status.innerHTML = "Объект удален.";
 });
 
 // 7. УПРАВЛЕНИЕ ВИДЕО
@@ -143,6 +144,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
