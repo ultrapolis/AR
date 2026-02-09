@@ -31,17 +31,21 @@ a-scene {
 /* Статус загрузки */
 #status {
     position: fixed; 
-    top: 10px; 
+    top: 0;           /* Прижмем к самому верху */
+    left: 0;
     width: 100%; 
+    padding: 10px 0;  /* Добавим немного отступа */
     text-align: center;
     color: #00ff00; 
-    z-index: 9999; 
+    z-index: 10002;   /* Теперь он выше всех системных надписей */
     font-family: sans-serif; 
     font-weight: bold; 
     text-shadow: 2px 2px 4px #000;
+    background: rgba(0, 0, 0, 0.6); /* Полупрозрачный черный фон, чтобы текст читался */
 }
 
 /* Прячем системные иконки загрузки MindAR */
 .mindar-ui-scanning, .mindar-ui-loading { 
     display: none !important; 
+
 }
