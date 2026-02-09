@@ -75,18 +75,21 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ФИКСАЦИЯ! ИЩИ РОЗОВЫЙ ШАР";
+    status.innerHTML = "ЗАКРЕПЛЕНО! ТЕПЕРЬ МОЖНО УБРАТЬ КНИГУ";
     
-    // Показываем контейнер
+    // 1. Показываем контейнер
     worldContainer.setAttribute('visible', 'true');
-
-    // МАГИЯ: Переносим из таргета в корень сцены
-    sceneEl.appendChild(worldContainer);
-
-    // Ставим ПРЯМО перед камерой (0 0 -2 метра)
-    // В A-Frame координаты "0 0 -2" после appendChild часто 
-    // считаются от точки старта приложения.
-    worldContainer.setAttribute('position', '0 1.5 -2'); 
+    
+    // 2. ХАК: Удаляем у таргета способность управлять видимостью этого объекта
+    // Мы просто "ломаем" связь MindAR с этим контейнером
+    const t2 = document.querySelector('#target2');
+    
+    // Перехватываем событие потери цели и запрещаем ему скрывать модель
+    t2.addEventListener("targetLost", (e) => {
+        // Мы просто не даем контейнеру стать invisible
+        worldContainer.setAttribute('visible', 'true'); 
+        status.innerHTML = "Маркер потерян, но объект остался!";
+    });
 
     closeBtn.style.display = 'block';
 }
@@ -143,5 +146,6 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
