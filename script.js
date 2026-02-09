@@ -47,9 +47,30 @@ t1.addEventListener("targetFound", () => { status.innerHTML = "Крутите м
 // СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ
 const t2 = document.querySelector('#target2');
 t2.addEventListener("targetFound", () => {
-    status.innerHTML = "Объект зафиксирован в комнате!";
-    worldContainer.setAttribute('visible', 'true');
-    closeBtn.style.display = 'block';
+    status.innerHTML = "Загрузка тяжелого объекта...";
+    
+    // Если модель еще не привязана, привязываем её (начнется скачивание)
+    if (!freeModel.getAttribute('src')) {
+        freeModel.setAttribute('src', './model2.glb'); 
+    }
+
+    // Ждем, пока модель загрузится в память
+    freeModel.addEventListener('model-loaded', () => {
+        status.innerHTML = "Объект зафиксирован в комнате!";
+        
+        const cameraEl = document.querySelector('a-camera');
+        const worldPos = new THREE.Vector3();
+        cameraEl.object3D.getWorldPosition(worldPos);
+        
+        worldContainer.setAttribute('position', {
+            x: worldPos.x, 
+            y: worldPos.y - 0.5, 
+            z: worldPos.z - 2 
+        });
+        
+        worldContainer.setAttribute('visible', 'true');
+        closeBtn.style.display = 'block';
+    }, { once: true }); // once: true значит выполнить только один раз
 });
 
 closeBtn.addEventListener('click', () => {
@@ -218,4 +239,5 @@ t2.addEventListener("targetLost", () => {
     // Просто не пиши сюда ничего, но MindAR по умолчанию её скроет.
     status.innerHTML = "Потерян маркер, но объект должен быть где-то тут...";
 });
+
 
