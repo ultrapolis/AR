@@ -75,26 +75,18 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН! ОГЛЯНИСЬ ВОКРУГ";
+    status.innerHTML = "ФИКСАЦИЯ! ИЩИ РОЗОВЫЙ ШАР";
     
-    // 1. Показываем
+    // Показываем контейнер
     worldContainer.setAttribute('visible', 'true');
-    
-    // 2. Вырываем в корень сцены
+
+    // МАГИЯ: Переносим из таргета в корень сцены
     sceneEl.appendChild(worldContainer);
 
-    // 3. УПРОЩЕННАЯ ПОЗИЦИЯ: 
-    // Ставим модель в "абсолютный ноль" или чуть впереди.
-    // На многих телефонах в WebAR "ноль" — это место, где ты открыла сайт.
-    worldContainer.setAttribute('position', '0 0 -2'); 
-    
-    // Сделаем масштаб побольше для теста
-    freeModel.setAttribute('scale', '2 2 2'); 
-
-    // 4. Добавим свет ПРЯМО В КОНТЕЙНЕР (вдруг там темно?)
-    let light = document.createElement('a-entity');
-    light.setAttribute('light', 'type: point; intensity: 2; distance: 50');
-    worldContainer.appendChild(light);
+    // Ставим ПРЯМО перед камерой (0 0 -2 метра)
+    // В A-Frame координаты "0 0 -2" после appendChild часто 
+    // считаются от точки старта приложения.
+    worldContainer.setAttribute('position', '0 1.5 -2'); 
 
     closeBtn.style.display = 'block';
 }
@@ -151,4 +143,5 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
