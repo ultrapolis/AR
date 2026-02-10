@@ -75,43 +75,41 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН! ТЕПЕРЬ МОЖНО УБРАТЬ КНИГУ";
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН!";
     
     // 1. Показываем контейнер
     worldContainer.setAttribute('visible', 'true');
-
-    // 2. ФИКСАЦИЯ (Перенос в мировые координаты)
-    const marker = document.querySelector('#target2').object3D;
-    const worldPos = new THREE.Vector3();
-    const worldQuat = new THREE.Quaternion();
-    const worldScale = new THREE.Vector3();
-    
-    // Важно: обновляем матрицы, чтобы расчет был точным
-    marker.updateMatrixWorld();
-    marker.matrixWorld.decompose(worldPos, worldQuat, worldScale);
-
-    // ВЫРЫВАЕМ модель из таргета и кладем в корень сцены
-    sceneEl.appendChild(worldContainer);
-
-    // Применяем вычисленные координаты
-    worldContainer.object3D.position.copy(worldPos);
-    worldContainer.object3D.quaternion.copy(worldQuat);
-
     closeBtn.style.display = 'block';
+
+    // 2. ГЛАВНЫЙ ХАК: "Ослепляем" MindAR для этого таргета
+    const t2 = document.querySelector('#target2');
+    
+    // Мы подменяем функцию, которая скрывает объект при потере маркера
+    // Теперь, когда MindAR захочет скрыть таргет, он вызовет пустую функцию
+    t2.el.object3D.visible = true; 
+    
+    // Перехватываем событие потери и насильно оставляем видимым
+    t2.addEventListener("targetLost", () => {
+        worldContainer.setAttribute('visible', 'true');
+        // Принудительно ставим флаг видимости на самом 3D объекте
+        t2.object3D.visible = true;
+    });
+
+    // 3. Чтобы модель не дрожала, когда ты убираешь книгу, 
+    // можно попробовать "заморозить" матрицу (необязательно, но помогает)
+    t2.object3D.matrixAutoUpdate = false;
 }
 
-// Кнопка закрытия модели
+// Кнопка закрытия
 closeBtn.addEventListener('click', () => {
+    const t2 = document.querySelector('#target2');
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
-    status.innerHTML = "Объект удален. Наведите на маркер снова.";
+    status.innerHTML = "Объект удален.";
     
-    // Возвращаем модель "домой" в таргет, чтобы она снова могла "пойматься"
-    document.querySelector('#target2').appendChild(worldContainer);
-    
-    // Сбрасываем локальные координаты в ноль, чтобы она снова сидела на маркере
-    worldContainer.object3D.position.set(0, 0, 0);
-    worldContainer.object3D.rotation.set(0, 0, 0);
+    // Возвращаем всё в исходное состояние
+    t2.object3D.visible = false;
+    t2.object3D.matrixAutoUpdate = true;
 });
 
 // 7. УПРАВЛЕНИЕ ВИДЕО КНОПКОЙ
@@ -156,6 +154,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
