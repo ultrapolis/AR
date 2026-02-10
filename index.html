@@ -12,34 +12,35 @@
     <div id="status">Загрузка ресурсов...</div>
     <button id="btn">START</button>
 
-    <a-scene 
-        id="scene"
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 0.01;" 
-        embedded color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights: false, exposure: 2.0;" 
-        vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-<a-entity id="target0" mindar-image-target="targetIndex: 0">
-    <a-video src="#v" width="1" height="1" position="0 0 0"></a-video>
-</a-entity>
-
-<a-entity id="target1" mindar-image-target="targetIndex: 1">
-    <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0" rotation="90 0 0"></a-gltf-model>
-</a-entity>
-
-<a-entity id="target2" mindar-image-target="targetIndex: 2"></a-entity>
-
-<a-entity id="world-container" visible="false">
-    <a-entity light="type: point; intensity: 1.5" position="0 2 1"></a-entity>
-    <a-gltf-model id="free-model" src="./model2.glb" scale="1 1 1"></a-gltf-model>
-</a-entity>
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
     
-    </a-scene>
+    <a-assets>
+        <video id="v" src="./video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <a-asset-item id="myModel" src="./model1.glb"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity id="target0" mindar-image-target="targetIndex: 0">
+        <a-video src="#v" width="1" height="1" position="0 0 0"></a-video>
+    </a-entity>
+
+    <a-entity id="target1" mindar-image-target="targetIndex: 1">
+        <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0" rotation="90 0 0"></a-gltf-model>
+    </a-entity>
+
+    <a-entity id="target2" mindar-image-target="targetIndex: 2"></a-entity>
+
+    <a-entity id="world-container" visible="false">
+        <a-entity light="type: point; intensity: 1.5" position="0 2 1"></a-entity>
+        <a-gltf-model id="free-model" src="./model2.glb" scale="1 1 1"></a-gltf-model>
+    </a-entity>
+
+</a-scene>
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
