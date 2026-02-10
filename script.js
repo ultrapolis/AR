@@ -49,31 +49,33 @@ document.querySelector('#target1').addEventListener("targetFound", () => {
 // СТРАНИЦА 3: ФИКСАЦИЯ
 document.querySelector('#target2').addEventListener("targetFound", () => {
     if (worldContainer.getAttribute('visible') === 'false') {
-        status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН В КОМНАТЕ!";
+        status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН!";
         
-        // 1. Сначала показываем (он пока прилип к камере)
+        const cameraEl = document.querySelector('a-camera');
+        
+        // 1. Создаем векторы для позиции и направления
+        const pos = new THREE.Vector3();
+        const dir = new THREE.Vector3();
+        
+        // 2. Узнаем, где камера и куда она смотрит в МИРЕ
+        cameraEl.object3D.getWorldPosition(pos);
+        cameraEl.object3D.getWorldDirection(dir);
+
+        // 3. Вычисляем точку в 2 метрах ПЕРЕД камерой
+        // (минус, потому что в Three.js камера смотрит в -Z)
+        const finalX = pos.x - (dir.x * 2);
+        const finalY = pos.y - (dir.y * 2) - 0.5; // чуть ниже уровня глаз
+        const finalZ = pos.z - (dir.z * 2);
+
+        // 4. Мгновенно перемещаем наш "мировой" контейнер туда
+        worldContainer.setAttribute('position', {x: finalX, y: finalY, z: finalZ});
+        
+        // Поворачиваем его к себе
+        const camRot = cameraEl.getAttribute('rotation');
+        worldContainer.setAttribute('rotation', {x: 0, y: camRot.y, z: 0});
+
         worldContainer.setAttribute('visible', 'true');
         closeBtn.style.display = 'block';
-
-        // 2. МАГИЯ: Через 100мс берем его МИРОВУЮ позицию и переносим в корень сцены
-        setTimeout(() => {
-            const worldPos = new THREE.Vector3();
-            const worldQuat = new THREE.Quaternion();
-            
-            // Узнаем, где в комнате сейчас находится "прилипшая" модель
-            worldContainer.object3D.getWorldPosition(worldPos);
-            worldContainer.object3D.getWorldQuaternion(worldQuat);
-
-            // Переносим контейнер из камеры в корень сцены
-            sceneEl.appendChild(worldContainer);
-
-            // Устанавливаем ему эти МИРОВЫЕ координаты
-            worldContainer.object3D.position.copy(worldPos);
-            worldContainer.object3D.quaternion.copy(worldQuat);
-            
-            // Сбрасываем локальное смещение, так как теперь мы в корне сцены
-            worldContainer.setAttribute('position', {x: worldPos.x, y: worldPos.y, z: worldPos.z});
-        }, 100);
     }
 });
 
@@ -119,4 +121,5 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
