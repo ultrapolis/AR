@@ -75,41 +75,33 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН!";
+    status.innerHTML = "ОБЪЕКТ ПОЙМАН! ТЕПЕРЬ ОН С ТОБОЙ";
     
     // 1. Показываем контейнер
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
 
-    // 2. ГЛАВНЫЙ ХАК: "Ослепляем" MindAR для этого таргета
-    const t2 = document.querySelector('#target2');
-    
-    // Мы подменяем функцию, которая скрывает объект при потере маркера
-    // Теперь, когда MindAR захочет скрыть таргет, он вызовет пустую функцию
-    t2.el.object3D.visible = true; 
-    
-    // Перехватываем событие потери и насильно оставляем видимым
-    t2.addEventListener("targetLost", () => {
-        worldContainer.setAttribute('visible', 'true');
-        // Принудительно ставим флаг видимости на самом 3D объекте
-        t2.object3D.visible = true;
-    });
+    // 2. ХАК: Переносим модель ВНУТРЬ камеры
+    // Это единственный способ на iPhone SE не дать объекту исчезнуть
+    const cameraEl = document.querySelector('a-camera');
+    cameraEl.appendChild(worldContainer);
 
-    // 3. Чтобы модель не дрожала, когда ты убираешь книгу, 
-    // можно попробовать "заморозить" матрицу (необязательно, но помогает)
-    t2.object3D.matrixAutoUpdate = false;
+    // 3. Устанавливаем позицию перед глазами
+    // Чтобы она не была "внутри" головы, отодвигаем на 2 метра вперед (Z = -2)
+    worldContainer.setAttribute('position', '0 -0.5 -2');
+    // Поворачиваем, чтобы шар был виден
+    worldContainer.setAttribute('rotation', '0 0 0');
 }
 
 // Кнопка закрытия
 closeBtn.addEventListener('click', () => {
-    const t2 = document.querySelector('#target2');
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
     status.innerHTML = "Объект удален.";
     
-    // Возвращаем всё в исходное состояние
-    t2.object3D.visible = false;
-    t2.object3D.matrixAutoUpdate = true;
+    // Возвращаем модель в таргет, чтобы можно было поймать снова
+    document.querySelector('#target2').appendChild(worldContainer);
+    worldContainer.setAttribute('position', '0 0 0');
 });
 
 // 7. УПРАВЛЕНИЕ ВИДЕО КНОПКОЙ
@@ -154,6 +146,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
