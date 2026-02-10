@@ -17,7 +17,7 @@
          vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
     
     <a-assets>
-        <video id="v" src="./video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <video id="v" src="./tree.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
         <a-asset-item id="myModel" src="./model1.glb"></a-asset-item>
         <a-asset-item id="myModel2" src="./model2.glb"></a-asset-item>
     </a-assets>
@@ -29,7 +29,7 @@
     </a-entity>
 
     <a-entity id="target1" mindar-image-target="targetIndex: 1">
-        <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0" rotation="90 0 0"></a-gltf-model>
+        <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0" rotation="0 0 0"></a-gltf-model>
         <a-light type="directional" intensity="1" position="1 1 1"></a-light>
     </a-entity>
 
@@ -45,6 +45,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
