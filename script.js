@@ -75,17 +75,26 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "РЕЖИМ ОСМОТРА (Крутите модель пальцем)";
+    const t2 = document.querySelector('#target2');
+    const status = document.querySelector('#status');
     
-    // 1. Показываем модель (она внутри камеры, поэтому всегда перед глазами)
+    // 1. Берем координаты ТАРГЕТА (где лежит книга в мире)
+    const markerPos = new THREE.Vector3();
+    t2.object3D.getWorldPosition(markerPos);
+    
+    const markerRot = new THREE.Quaternion();
+    t2.object3D.getWorldQuaternion(markerRot);
+
+    // 2. Ставим модель ТУДА ЖЕ
+    worldContainer.object3D.position.copy(markerPos);
+    worldContainer.object3D.quaternion.copy(markerRot);
+    
+    // 3. Показываем
     worldContainer.setAttribute('visible', 'true');
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН НА СТОЛЕ!";
     closeBtn.style.display = 'block';
 
-    // 2. ВЫКЛЮЧАЕМ камеру (делаем видео прозрачным)
-    const arVideo = document.querySelector('video');
-    if (arVideo) {
-        arVideo.style.opacity = "0"; 
-    }
+    // 4. ГЛАВНОЕ: Мы НЕ выключаем камеру, чтобы видеть комнату
 }
 
 // Обработчик кнопки закрытия (крестика)
@@ -143,6 +152,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
