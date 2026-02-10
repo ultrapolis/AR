@@ -75,21 +75,27 @@ t2.addEventListener("targetFound", () => {
 });
 
 function showWorldModel() {
-    status.innerHTML = "ЗАКРЕПЛЕНО! ТЕПЕРЬ МОЖНО УБРАТЬ КНИГУ";
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН! ТЕПЕРЬ МОЖНО УБРАТЬ КНИГУ";
     
     // 1. Показываем контейнер
     worldContainer.setAttribute('visible', 'true');
+
+    // 2. ФИКСАЦИЯ (Перенос в мировые координаты)
+    const marker = document.querySelector('#target2').object3D;
+    const worldPos = new THREE.Vector3();
+    const worldQuat = new THREE.Quaternion();
+    const worldScale = new THREE.Vector3();
     
-    // 2. ХАК: Удаляем у таргета способность управлять видимостью этого объекта
-    // Мы просто "ломаем" связь MindAR с этим контейнером
-    const t2 = document.querySelector('#target2');
-    
-    // Перехватываем событие потери цели и запрещаем ему скрывать модель
-    t2.addEventListener("targetLost", (e) => {
-        // Мы просто не даем контейнеру стать invisible
-        worldContainer.setAttribute('visible', 'true'); 
-        status.innerHTML = "Маркер потерян, но объект остался!";
-    });
+    // Важно: обновляем матрицы, чтобы расчет был точным
+    marker.updateMatrixWorld();
+    marker.matrixWorld.decompose(worldPos, worldQuat, worldScale);
+
+    // ВЫРЫВАЕМ модель из таргета и кладем в корень сцены
+    sceneEl.appendChild(worldContainer);
+
+    // Применяем вычисленные координаты
+    worldContainer.object3D.position.copy(worldPos);
+    worldContainer.object3D.quaternion.copy(worldQuat);
 
     closeBtn.style.display = 'block';
 }
@@ -100,8 +106,12 @@ closeBtn.addEventListener('click', () => {
     closeBtn.style.display = 'none';
     status.innerHTML = "Объект удален. Наведите на маркер снова.";
     
-    // Возвращаем модель "домой" в таргет, чтобы можно было вызвать снова
+    // Возвращаем модель "домой" в таргет, чтобы она снова могла "пойматься"
     document.querySelector('#target2').appendChild(worldContainer);
+    
+    // Сбрасываем локальные координаты в ноль, чтобы она снова сидела на маркере
+    worldContainer.object3D.position.set(0, 0, 0);
+    worldContainer.object3D.rotation.set(0, 0, 0);
 });
 
 // 7. УПРАВЛЕНИЕ ВИДЕО КНОПКОЙ
@@ -146,5 +156,6 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
