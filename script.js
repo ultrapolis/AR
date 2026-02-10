@@ -58,27 +58,30 @@ const t2 = document.querySelector('#target2');
 
 t2.addEventListener("targetFound", () => {
     if (worldContainer.getAttribute('visible') === 'false') {
-        
+        status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН";
+
+        // 1. Загружаем модель
         if (!freeModel.getAttribute('src')) {
-            status.innerHTML = "Загрузка объекта...";
             freeModel.setAttribute('src', './model2.glb');
         }
 
-        status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН НА МОНИТОРЕ";
-
-        // Берем координаты МАРКЕРА (монитора)
-        const markerObj = t2.object3D;
-        const worldPos = new THREE.Vector3();
-        const worldQuat = new THREE.Quaternion();
-        const worldScale = new THREE.Vector3();
+        // 2. Берем камеру
+        const cameraEl = document.querySelector('a-camera');
         
-        // Магия: получаем мировые координаты того места, где сейчас картинка
-        markerObj.updateMatrixWorld();
-        markerObj.matrixWorld.decompose(worldPos, worldQuat, worldScale);
+        // 3. Прямая привязка: 
+        // Мы НЕ считаем сложные матрицы. Мы просто спрашиваем у A-Frame:
+        // "Где сейчас находится камера?"
+        const camPos = cameraEl.getAttribute('position');
+        const camRot = cameraEl.getAttribute('rotation');
 
-        // Ставим свободную модель ПРЯМО ТУДА
-        worldContainer.object3D.position.copy(worldPos);
-        worldContainer.object3D.quaternion.copy(worldQuat);
+        // 4. Ставим модель в ту же точку, что и камера...
+        worldContainer.setAttribute('position', camPos);
+        
+        // ...и "отталкиваем" её от себя на 1.5 метра вперёд 
+        // (в локальных координатах это проще всего)
+        // Но чтобы она не липла, мы делаем это ОДИН РАЗ
+        worldContainer.object3D.translateZ(-1.5);
+        worldContainer.object3D.translateY(-0.3); // чуть ниже уровня глаз
 
         worldContainer.setAttribute('visible', 'true');
         closeBtn.style.display = 'block';
@@ -129,3 +132,4 @@ window.addEventListener('touchmove', (e) => {
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
+
