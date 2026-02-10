@@ -49,39 +49,47 @@ document.querySelector('#target0').addEventListener("targetLost", () => {
 });
 
 // 4. СТРАНИЦА 2: МОДЕЛЬ 1
-document.querySelector('#target1').addEventListener("targetFound", () => { 
+const t1 = document.querySelector('#target1');
+t1.addEventListener("targetFound", () => { 
     status.innerHTML = "Крутите модель 1!"; 
 });
+// Сбрасываем статус, чтобы не мешать определению 3-й страницы
+t1.addEventListener("targetLost", () => { 
+    if (worldContainer.getAttribute('visible') === 'false') {
+        status.innerHTML = "Ищу следующий маркер..."; 
+    }
+});
 
-// 5. СТРАНИЦА 3: ЗАКРЕПЛЕНИЕ (Метод Якоря на Маркере)
+// 5. СТРАНИЦА 3: ЗАКРЕПЛЕНИЕ ОБЪЕКТА В МИРЕ
 const t2 = document.querySelector('#target2');
 
 t2.addEventListener("targetFound", () => {
+    // Срабатывает только если объект еще не закреплен
     if (worldContainer.getAttribute('visible') === 'false') {
         status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН";
 
-        // 1. Загружаем модель
+        // Загружаем модель
         if (!freeModel.getAttribute('src')) {
             freeModel.setAttribute('src', './model2.glb');
         }
 
-        // 2. Берем камеру
         const cameraEl = document.querySelector('a-camera');
         
-        // 3. Прямая привязка: 
-        // Мы НЕ считаем сложные матрицы. Мы просто спрашиваем у A-Frame:
-        // "Где сейчас находится камера?"
-        const camPos = cameraEl.getAttribute('position');
-        const camRot = cameraEl.getAttribute('rotation');
-
-        // 4. Ставим модель в ту же точку, что и камера...
-        worldContainer.setAttribute('position', camPos);
+        // Математика Three.js для точного позиционирования перед глазами
+        const pos = new THREE.Vector3();
+        const quat = new THREE.Quaternion();
         
-        // ...и "отталкиваем" её от себя на 1.5 метра вперёд 
-        // (в локальных координатах это проще всего)
-        // Но чтобы она не липла, мы делаем это ОДИН РАЗ
+        // Узнаем мировые координаты и поворот камеры в текущий момент
+        cameraEl.object3D.getWorldPosition(pos);
+        cameraEl.object3D.getWorldQuaternion(quat);
+
+        // Ставим контейнер (который вне таргетов) точно туда, где камера
+        worldContainer.object3D.position.copy(pos);
+        worldContainer.object3D.quaternion.copy(quat);
+        
+        // Отталкиваем модель от лица на 1.5 метра вперед и чуть вниз
         worldContainer.object3D.translateZ(-1.5);
-        worldContainer.object3D.translateY(-0.3); // чуть ниже уровня глаз
+        worldContainer.object3D.translateY(-0.3);
 
         worldContainer.setAttribute('visible', 'true');
         closeBtn.style.display = 'block';
@@ -118,8 +126,14 @@ window.addEventListener('touchmove', (e) => {
     const deltaY = e.touches[0].clientY - previousMousePosition.y;
 
     let activeModel = null;
-    if (worldContainer.getAttribute('visible') === 'true') activeModel = freeModel;
-    else if (status.innerHTML.includes("модель 1")) activeModel = model1;
+    // Если на экране закрепленная модель 3
+    if (worldContainer.getAttribute('visible') === 'true') {
+        activeModel = freeModel;
+    } 
+    // Если видим маркер модели 1
+    else if (status.innerHTML.includes("модель 1")) {
+        activeModel = model1;
+    }
 
     if (activeModel) {
         let rot = activeModel.getAttribute('rotation');
@@ -132,4 +146,3 @@ window.addEventListener('touchmove', (e) => {
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
-
