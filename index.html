@@ -37,19 +37,18 @@
             <a-gltf-model id="model-to-rotate" src="#myModel" scale="1.5 1.5 1.5" position="0 0 0.5" rotation="0 0 0"></a-gltf-model>
         </a-entity>
         
-<a-camera position="0 0 0" look-controls="enabled: false">
-    <a-entity id="world-container" visible="false" position="0 -0.5 -2.5">
-        <a-entity light="type: point; intensity: 2; distance: 10" position="0 2 1"></a-entity>
-        <a-gltf-model id="free-model" src="./model2.glb" scale="1 1 1"></a-gltf-model>
-    </a-entity>
-</a-camera>
+<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-<a-entity id="target2" mindar-image-target="targetIndex: 2"></a-entity>
+<a-entity id="world-container" visible="false">
+    <a-entity light="type: point; intensity: 1.5" position="0 2 1"></a-entity>
+    <a-gltf-model id="free-model" src="./model2.glb" scale="1 1 1"></a-gltf-model>
+</a-entity>
     
     </a-scene>
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
