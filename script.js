@@ -6,7 +6,7 @@ const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
 
-// 1. Создание кнопок программно
+// Создание кнопок
 const playBtn = document.createElement('button');
 playBtn.innerHTML = "PAUSE";
 playBtn.style.cssText = "position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:10001; padding:15px 30px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:30px; display:none; font-weight:bold;";
@@ -15,103 +15,58 @@ document.body.appendChild(playBtn);
 const closeBtn = document.createElement('button');
 closeBtn.id = 'close-btn';
 closeBtn.innerHTML = '✕';
-// Стили для кнопки-крестика уже в твоем CSS, просто убедимся, что она в body
 document.body.appendChild(closeBtn);
 
-// 2. Показ кнопки START после загрузки ресурсов
+// Запуск
 sceneEl.addEventListener('renderstart', () => {
     status.innerHTML = "Всё готово!";
     btn.style.display = 'block';
 });
 
-// 3. Запуск AR по кнопке
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
     status.innerHTML = "Инициализация...";
-    video.play().then(() => { 
-        video.pause(); 
-        sceneEl.systems['mindar-image-system'].start(); 
-    }).catch(() => { 
-        sceneEl.systems['mindar-image-system'].start(); 
-    });
+    video.play().then(() => { video.pause(); sceneEl.systems['mindar-image-system'].start(); })
+    .catch(() => { sceneEl.systems['mindar-image-system'].start(); });
 });
 
-sceneEl.addEventListener("arReady", () => { 
-    status.innerHTML = "ГОТОВО! Наведите на страницу"; 
+sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на страницу"; });
+
+// СТРАНИЦА 1: ВИДЕО
+document.querySelector('#target0').addEventListener("targetFound", () => {
+    video.currentTime = 0; video.play(); status.innerHTML = "Смотрим видео...";
+    playBtn.style.display = 'block';
+});
+document.querySelector('#target0').addEventListener("targetLost", () => { 
+    video.pause(); playBtn.style.display = 'none';
 });
 
-// 4. СТРАНИЦА 1: ВИДЕО
-const t0 = document.querySelector('#target0');
-t0.addEventListener("targetFound", () => {
-    status.innerHTML = "Смотрим видео...";
-    video.currentTime = 0; 
-    video.play();
-    playBtn.style.display = 'block'; 
-});
-t0.addEventListener("targetLost", () => { 
-    video.pause(); 
-    playBtn.style.display = 'none'; 
-});
-
-// 5. СТРАНИЦА 2: МОДЕЛЬ НА МАРКЕРЕ (Вращающаяся)
-const t1 = document.querySelector('#target1');
-t1.addEventListener("targetFound", () => { 
+// СТРАНИЦА 2: МОДЕЛЬ
+document.querySelector('#target1').addEventListener("targetFound", () => { 
     status.innerHTML = "Крутите модель 1!"; 
 });
 
-// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ
-const t2 = document.querySelector('#target2');
-t2.addEventListener("targetFound", () => {
-    showWorldModel();
-});
-
-function showWorldModel() {
+// СТРАНИЦА 3: ФИКСАЦИЯ
+document.querySelector('#target2').addEventListener("targetFound", () => {
     status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН!";
-    
-    // 1. Устанавливаем путь к файлу, если его нет
-    if (!freeModel.getAttribute('src')) {
-        freeModel.setAttribute('src', './model2.glb');
-    }
-
-    // 2. Показываем контейнер
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
+});
 
-    // 3. ХАК ДЛЯ IPHONE: Принудительно держим visible="true"
-    // Создаем таймер, который каждые 100мс проверяет, не скрыл ли MindAR модель
-    if (!worldContainer.dataset.intervalId) {
-        const interval = setInterval(() => {
-            if (closeBtn.style.display === 'block') {
-                worldContainer.setAttribute('visible', 'true');
-            }
-        }, 100);
-        worldContainer.dataset.intervalId = interval;
-    }
-}
-
-// Обработчик кнопки закрытия
+// Кнопка закрытия
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
     status.innerHTML = "Ищу маркер...";
-    
-    // Останавливаем таймер фиксации видимости
-    if (worldContainer.dataset.intervalId) {
-        clearInterval(parseInt(worldContainer.dataset.intervalId));
-        worldContainer.dataset.intervalId = "";
-    }
 });
 
-// 7. УПРАВЛЕНИЕ ВИДЕО КНОПКОЙ
+// Управление видео
 playBtn.addEventListener('click', () => {
-    if (video.paused) { 
-        video.play(); playBtn.innerHTML = "PAUSE"; 
-    } else { 
-        video.pause(); playBtn.innerHTML = "PLAY"; 
-    }
+    if (video.paused) { video.play(); playBtn.innerHTML = "PAUSE"; }
+    else { video.pause(); playBtn.innerHTML = "PLAY"; }
 });
 
-// 8. УНИВЕРСАЛЬНОЕ ВРАЩЕНИЕ ПАЛЬЦЕМ
+// ВРАЩЕНИЕ
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
@@ -119,9 +74,7 @@ window.addEventListener('touchstart', (e) => {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 });
-
 window.addEventListener('touchend', () => { isDragging = false; });
-
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     const touch = e.touches[0];
@@ -129,9 +82,7 @@ window.addEventListener('touchmove', (e) => {
     const deltaY = touch.clientY - previousMousePosition.y;
 
     let activeModel = null;
-    // Если на экране надпись про модель 1 — крутим её
     if (status.innerHTML.includes("модель 1")) activeModel = model1;
-    // Если виден контейнер со свободной моделью — крутим её
     if (worldContainer.getAttribute('visible') === 'true') activeModel = freeModel;
 
     if (activeModel) {
@@ -144,12 +95,3 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
-
-
-
-
-
-
-
-
-
