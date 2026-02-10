@@ -59,69 +59,46 @@ t1.addEventListener("targetFound", () => {
     status.innerHTML = "Крутите модель 1!"; 
 });
 
-// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ (Ленивая загрузка + Фиксация)
+// 6. СТРАНИЦА 3: СВОБОДНЫЙ ОБЪЕКТ
 const t2 = document.querySelector('#target2');
 t2.addEventListener("targetFound", () => {
-    if (!freeModel.getAttribute('src')) {
-        status.innerHTML = "Загрузка тяжелого объекта...";
-        freeModel.setAttribute('src', './model2.glb'); 
-        
-        freeModel.addEventListener('model-loaded', () => {
-            showWorldModel();
-        }, { once: true });
-    } else {
-        showWorldModel();
-    }
+    showWorldModel();
 });
 
 function showWorldModel() {
-    const t2 = document.querySelector('#target2');
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН!";
     
-    // 1. ПОДКЛЮЧАЕМ МОДЕЛЬ (та самая забытая вилка)
+    // 1. Устанавливаем путь к файлу, если его нет
     if (!freeModel.getAttribute('src')) {
-        status.innerHTML = "Загрузка 3D модели...";
         freeModel.setAttribute('src', './model2.glb');
-        
-        // Ждем, пока она реально загрузится, прежде чем крепить
-        freeModel.addEventListener('model-loaded', () => {
-            status.innerHTML = "Объект закреплен!";
-            fixModelPosition(t2);
-        }, { once: true });
-    } else {
-        fixModelPosition(t2);
+    }
+
+    // 2. Показываем контейнер
+    worldContainer.setAttribute('visible', 'true');
+    closeBtn.style.display = 'block';
+
+    // 3. ХАК ДЛЯ IPHONE: Принудительно держим visible="true"
+    // Создаем таймер, который каждые 100мс проверяет, не скрыл ли MindAR модель
+    if (!worldContainer.dataset.intervalId) {
+        const interval = setInterval(() => {
+            if (closeBtn.style.display === 'block') {
+                worldContainer.setAttribute('visible', 'true');
+            }
+        }, 100);
+        worldContainer.dataset.intervalId = interval;
     }
 }
 
-// Вспомогательная функция для "якоря"
-function fixModelPosition(target) {
-    const markerPos = new THREE.Vector3();
-    const markerQuat = new THREE.Quaternion();
-    const markerScale = new THREE.Vector3();
-    
-    // Берем точное местоположение маркера в мире
-    target.object3D.matrixWorld.decompose(markerPos, markerQuat, markerScale);
-
-    // Переносим контейнер в это место
-    worldContainer.object3D.position.copy(markerPos);
-    worldContainer.object3D.quaternion.copy(markerQuat);
-    
-    // Вырываем из-под власти MindAR, чтобы не исчезла
-    sceneEl.appendChild(worldContainer);
-    
-    worldContainer.setAttribute('visible', 'true');
-    closeBtn.style.display = 'block';
-}
-
-// Обработчик кнопки закрытия (крестика)
+// Обработчик кнопки закрытия
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
-    status.innerHTML = "Возврат к книге...";
-
-    // ВКЛЮЧАЕМ камеру обратно
-    const arVideo = document.querySelector('video');
-    if (arVideo) {
-        arVideo.style.opacity = "1";
+    status.innerHTML = "Ищу маркер...";
+    
+    // Останавливаем таймер фиксации видимости
+    if (worldContainer.dataset.intervalId) {
+        clearInterval(parseInt(worldContainer.dataset.intervalId));
+        worldContainer.dataset.intervalId = "";
     }
 });
 
@@ -167,6 +144,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
