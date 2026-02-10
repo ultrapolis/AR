@@ -6,7 +6,7 @@ const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
 
-// 1. Создание кнопок программно
+// 1. Создание кнопок
 const playBtn = document.createElement('button');
 playBtn.innerHTML = "PAUSE";
 playBtn.style.cssText = "position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:10001; padding:15px 30px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:30px; display:none; font-weight:bold;";
@@ -17,13 +17,12 @@ closeBtn.id = 'close-btn';
 closeBtn.innerHTML = '✕';
 document.body.appendChild(closeBtn);
 
-// 2. Показ кнопки START после загрузки ресурсов
+// 2. Инициализация
 sceneEl.addEventListener('renderstart', () => {
     status.innerHTML = "Всё готово!";
     btn.style.display = 'block';
 });
 
-// 3. Запуск AR по кнопке
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
     status.innerHTML = "Инициализация...";
@@ -36,111 +35,88 @@ btn.addEventListener('click', () => {
 });
 
 sceneEl.addEventListener("arReady", () => { 
-    status.innerHTML = "ГОТОВО! Наведите на страницу"; 
+    status.innerHTML = "ГОТОВО! Наведите на монитор"; 
 });
 
-// 4. СТРАНИЦА 1: ВИДЕО
-const t0 = document.querySelector('#target0');
-t0.addEventListener("targetFound", () => {
+// 3. СТРАНИЦА 1: ВИДЕО
+document.querySelector('#target0').addEventListener("targetFound", () => {
+    video.currentTime = 0; video.play();
     status.innerHTML = "Смотрим видео...";
-    video.currentTime = 0; 
-    video.play();
     playBtn.style.display = 'block'; 
 });
-t0.addEventListener("targetLost", () => { 
-    video.pause(); 
-    playBtn.style.display = 'none'; 
+document.querySelector('#target0').addEventListener("targetLost", () => { 
+    video.pause(); playBtn.style.display = 'none'; 
 });
 
-// 5. СТРАНИЦА 2: МОДЕЛЬ НА МАРКЕРЕ
-const t1 = document.querySelector('#target1');
-t1.addEventListener("targetFound", () => { 
+// 4. СТРАНИЦА 2: МОДЕЛЬ 1
+document.querySelector('#target1').addEventListener("targetFound", () => { 
     status.innerHTML = "Крутите модель 1!"; 
 });
 
-// 6. СТРАНИЦА 3: ФИКСАЦИЯ В МИРЕ (Метод из GitHub Issues)
+// 5. СТРАНИЦА 3: ЗАКРЕПЛЕНИЕ (Метод Якоря на Маркере)
 const t2 = document.querySelector('#target2');
 
 t2.addEventListener("targetFound", () => {
-    // Если объект еще не зафиксирован в мире
     if (worldContainer.getAttribute('visible') === 'false') {
         
-        // Проверяем загрузку модели
         if (!freeModel.getAttribute('src')) {
             status.innerHTML = "Загрузка объекта...";
             freeModel.setAttribute('src', './model2.glb');
         }
 
-        status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН В КОМНАТЕ";
+        status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН НА МОНИТОРЕ";
 
-        // Магия позиционирования перед камерой
-        const cameraObj = document.querySelector('a-camera').object3D;
+        // Берем координаты МАРКЕРА (монитора)
+        const markerObj = t2.object3D;
         const worldPos = new THREE.Vector3();
         const worldQuat = new THREE.Quaternion();
+        const worldScale = new THREE.Vector3();
         
-        // Узнаем, где сейчас камера и куда смотрит
-        cameraObj.getWorldPosition(worldPos);
-        cameraObj.getWorldQuaternion(worldQuat);
+        // Магия: получаем мировые координаты того места, где сейчас картинка
+        markerObj.updateMatrixWorld();
+        markerObj.matrixWorld.decompose(worldPos, worldQuat, worldScale);
 
-        // Считаем точку в 2 метрах впереди
-        const forward = new THREE.Vector3(0, 0, -2); 
-        forward.applyQuaternion(worldQuat); 
-        worldPos.add(forward);
-
-        // Переносим "свободный" контейнер в эти координаты
+        // Ставим свободную модель ПРЯМО ТУДА
         worldContainer.object3D.position.copy(worldPos);
-        
-        // Поворачиваем его лицом к нам (только по оси Y)
-        const euler = new THREE.Euler().setFromQuaternion(worldQuat);
-        worldContainer.object3D.rotation.set(0, euler.y, 0);
+        worldContainer.object3D.quaternion.copy(worldQuat);
 
         worldContainer.setAttribute('visible', 'true');
         closeBtn.style.display = 'block';
     }
 });
 
-// Кнопка закрытия для модели 3
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
-    status.innerHTML = "Наведите на маркер снова";
+    status.innerHTML = "Наведите на монитор снова.";
 });
 
-// 7. УПРАВЛЕНИЕ ВИДЕО КНОПКОЙ
+// 6. УПРАВЛЕНИЕ ВИДЕО
 playBtn.addEventListener('click', () => {
-    if (video.paused) { 
-        video.play(); playBtn.innerHTML = "PAUSE"; 
-    } else { 
-        video.pause(); playBtn.innerHTML = "PLAY"; 
-    }
+    if (video.paused) { video.play(); playBtn.innerHTML = "PAUSE"; }
+    else { video.pause(); playBtn.innerHTML = "PLAY"; }
 });
 
-// 8. УНИВЕРСАЛЬНОЕ ВРАЩЕНИЕ ПАЛЬЦЕМ
+// 7. ВРАЩЕНИЕ
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
 window.addEventListener('touchstart', (e) => {
     isDragging = true;
-    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    previousMousePosition.x = e.touches[0].clientX;
+    previousMousePosition.y = e.touches[0].clientY;
 });
 
 window.addEventListener('touchend', () => { isDragging = false; });
 
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - previousMousePosition.x;
-    const deltaY = touch.clientY - previousMousePosition.y;
+    const deltaX = e.touches[0].clientX - previousMousePosition.x;
+    const deltaY = e.touches[0].clientY - previousMousePosition.y;
 
     let activeModel = null;
-    // Если виден мировой контейнер — крутим модель внутри него
-    if (worldContainer.getAttribute('visible') === 'true') {
-        activeModel = freeModel;
-    } 
-    // Если на экране маркер 1 — крутим первую модель
-    else if (status.innerHTML.includes("модель 1")) {
-        activeModel = model1;
-    }
+    if (worldContainer.getAttribute('visible') === 'true') activeModel = freeModel;
+    else if (status.innerHTML.includes("модель 1")) activeModel = model1;
 
     if (activeModel) {
         let rot = activeModel.getAttribute('rotation');
@@ -150,5 +126,6 @@ window.addEventListener('touchmove', (e) => {
             z: rot.z
         });
     }
-    previousMousePosition = { x: touch.clientX, y: touch.clientY };
+    previousMousePosition.x = e.touches[0].clientX;
+    previousMousePosition.y = e.touches[0].clientY;
 });
