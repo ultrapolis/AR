@@ -76,25 +76,26 @@ t2.addEventListener("targetFound", () => {
 
 function showWorldModel() {
     const t2 = document.querySelector('#target2');
-    const status = document.querySelector('#status');
     
-    // 1. Берем координаты ТАРГЕТА (где лежит книга в мире)
+    // 1. Узнаем, где в пространстве сейчас находится маркер страницы
     const markerPos = new THREE.Vector3();
-    t2.object3D.getWorldPosition(markerPos);
+    const markerQuat = new THREE.Quaternion();
+    const markerScale = new THREE.Vector3();
     
-    const markerRot = new THREE.Quaternion();
-    t2.object3D.getWorldQuaternion(markerRot);
+    t2.object3D.matrixWorld.decompose(markerPos, markerQuat, markerScale);
 
-    // 2. Ставим модель ТУДА ЖЕ
+    // 2. Копируем эти координаты нашему контейнеру
     worldContainer.object3D.position.copy(markerPos);
-    worldContainer.object3D.quaternion.copy(markerRot);
+    worldContainer.object3D.quaternion.copy(markerQuat);
     
-    // 3. Показываем
+    // 3. Показываем его
     worldContainer.setAttribute('visible', 'true');
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН НА СТОЛЕ!";
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН НА СТРАНИЦЕ";
     closeBtn.style.display = 'block';
 
-    // 4. ГЛАВНОЕ: Мы НЕ выключаем камеру, чтобы видеть комнату
+    // 4. Чтобы MindAR не смог его скрыть при потере маркера, 
+    // МЫ ВЫНОСИМ ЕГО ИЗ ТАРГЕТА (если он вдруг был внутри)
+    sceneEl.appendChild(worldContainer);
 }
 
 // Обработчик кнопки закрытия (крестика)
@@ -152,6 +153,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
