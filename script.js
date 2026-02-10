@@ -77,25 +77,32 @@ t2.addEventListener("targetFound", () => {
 function showWorldModel() {
     const t2 = document.querySelector('#target2');
     
-    // 1. Узнаем, где в пространстве сейчас находится маркер страницы
+    // --- ВОТ ЭТОТ БЛОК МЫ ПРОПУСТИЛИ ---
+    // Если у модели еще нет ссылки на файл, устанавливаем её
+    if (!freeModel.getAttribute('src')) {
+        status.innerHTML = "Загрузка модели...";
+        freeModel.setAttribute('src', './model2.glb'); // Твоя третья модель
+    }
+    // ----------------------------------
+
+    // 1. Узнаем мировые координаты маркера
     const markerPos = new THREE.Vector3();
     const markerQuat = new THREE.Quaternion();
     const markerScale = new THREE.Vector3();
     
     t2.object3D.matrixWorld.decompose(markerPos, markerQuat, markerScale);
 
-    // 2. Копируем эти координаты нашему контейнеру
+    // 2. Переносим контейнер в эти координаты
     worldContainer.object3D.position.copy(markerPos);
     worldContainer.object3D.quaternion.copy(markerQuat);
     
-    // 3. Показываем его
-    worldContainer.setAttribute('visible', 'true');
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН НА СТРАНИЦЕ";
-    closeBtn.style.display = 'block';
-
-    // 4. Чтобы MindAR не смог его скрыть при потере маркера, 
-    // МЫ ВЫНОСИМ ЕГО ИЗ ТАРГЕТА (если он вдруг был внутри)
+    // 3. Вырываем из власти MindAR в корень сцены
     sceneEl.appendChild(worldContainer);
+    
+    // 4. Показываем
+    worldContainer.setAttribute('visible', 'true');
+    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН";
+    closeBtn.style.display = 'block';
 }
 
 // Обработчик кнопки закрытия (крестика)
@@ -153,6 +160,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
