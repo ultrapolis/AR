@@ -77,31 +77,38 @@ t2.addEventListener("targetFound", () => {
 function showWorldModel() {
     const t2 = document.querySelector('#target2');
     
-    // --- ВОТ ЭТОТ БЛОК МЫ ПРОПУСТИЛИ ---
-    // Если у модели еще нет ссылки на файл, устанавливаем её
+    // 1. ПОДКЛЮЧАЕМ МОДЕЛЬ (та самая забытая вилка)
     if (!freeModel.getAttribute('src')) {
-        status.innerHTML = "Загрузка модели...";
-        freeModel.setAttribute('src', './model2.glb'); // Твоя третья модель
+        status.innerHTML = "Загрузка 3D модели...";
+        freeModel.setAttribute('src', './model2.glb');
+        
+        // Ждем, пока она реально загрузится, прежде чем крепить
+        freeModel.addEventListener('model-loaded', () => {
+            status.innerHTML = "Объект закреплен!";
+            fixModelPosition(t2);
+        }, { once: true });
+    } else {
+        fixModelPosition(t2);
     }
-    // ----------------------------------
+}
 
-    // 1. Узнаем мировые координаты маркера
+// Вспомогательная функция для "якоря"
+function fixModelPosition(target) {
     const markerPos = new THREE.Vector3();
     const markerQuat = new THREE.Quaternion();
     const markerScale = new THREE.Vector3();
     
-    t2.object3D.matrixWorld.decompose(markerPos, markerQuat, markerScale);
+    // Берем точное местоположение маркера в мире
+    target.object3D.matrixWorld.decompose(markerPos, markerQuat, markerScale);
 
-    // 2. Переносим контейнер в эти координаты
+    // Переносим контейнер в это место
     worldContainer.object3D.position.copy(markerPos);
     worldContainer.object3D.quaternion.copy(markerQuat);
     
-    // 3. Вырываем из власти MindAR в корень сцены
+    // Вырываем из-под власти MindAR, чтобы не исчезла
     sceneEl.appendChild(worldContainer);
     
-    // 4. Показываем
     worldContainer.setAttribute('visible', 'true');
-    status.innerHTML = "ОБЪЕКТ ЗАКРЕПЛЕН";
     closeBtn.style.display = 'block';
 }
 
@@ -160,6 +167,7 @@ window.addEventListener('touchmove', (e) => {
     }
     previousMousePosition = { x: touch.clientX, y: touch.clientY };
 });
+
 
 
 
