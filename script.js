@@ -4,8 +4,9 @@ const sceneEl = document.querySelector('a-scene');
 const video = document.querySelector('#v');
 const model1 = document.querySelector('#model-to-rotate');
 const hiddenViewer = document.querySelector('#hidden-viewer');
+const arButton = document.querySelector('#ar-button'); // Наша новая кнопка
 
-// 1. Создание кнопок
+// 1. Создание кнопки видео
 const playBtn = document.createElement('button');
 playBtn.innerHTML = "PAUSE";
 playBtn.style.cssText = "position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:10001; padding:15px 30px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:30px; display:none; font-weight:bold;";
@@ -36,17 +37,27 @@ document.querySelector('#target0').addEventListener("targetLost", () => {
     video.pause(); playBtn.style.display = 'none'; 
 });
 
-// 4. ТАРГЕТ 1: МОДЕЛЬ 1 (Вращаемая)
+// 4. ТАРГЕТ 1: МОДЕЛЬ 1
 document.querySelector('#target1').addEventListener("targetFound", () => { 
     status.innerHTML = "Крутите модель 1!"; 
 });
 
-// 5. ТАРГЕТ 2: ПРЫЖОК В НАСТОЯЩИЙ AR
+// 5. ТАРГЕТ 2: ВЫЗОВ КНОПКИ АКТИВАЦИИ
 document.querySelector('#target2').addEventListener("targetFound", () => {
-    status.innerHTML = "ОТКРЫВАЮ МОДЕЛЬ В КОМНАТЕ...";
-    
-    // Это магическая команда, которая запускает системный AR
+    status.innerHTML = "Маркер найден!";
+    arButton.style.display = 'block'; // Показываем кнопку
+});
+
+document.querySelector('#target2').addEventListener("targetLost", () => {
+    // Не скрываем кнопку сразу, чтобы пользователь успел нажать,
+    // если маркер чуть "дрожит"
+});
+
+// ГЛАВНОЕ: Запуск AR по клику пользователя
+arButton.addEventListener('click', () => {
+    status.innerHTML = "ЗАПУСК AR...";
     hiddenViewer.activateAR();
+    arButton.style.display = 'none'; // Прячем после нажатия
 });
 
 // 6. УПРАВЛЕНИЕ ВИДЕО
@@ -55,7 +66,7 @@ playBtn.addEventListener('click', () => {
     else { video.pause(); playBtn.innerHTML = "PLAY"; }
 });
 
-// 7. ВРАЩЕНИЕ ПАЛЬЦЕМ (для модели 1)
+// 7. ВРАЩЕНИЕ ПАЛЬЦЕМ
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 
