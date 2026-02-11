@@ -83,13 +83,24 @@ enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
     
-    // Делаем сферу видимой и запускаем видео
+    // Пытаемся активировать датчики (важно для iOS)
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    cameraEl.setAttribute('look-controls', 'enabled: true');
+                }
+            })
+            .catch(console.error);
+    } else {
+        // Для устройств, где разрешение не требуется
+        cameraEl.setAttribute('look-controls', 'enabled: true');
+    }
+
     skyPortal.setAttribute('visible', 'true');
     video.currentTime = 0;
     video.play();
     
-    // Включаем гироскоп
-    cameraEl.setAttribute('look-controls', 'enabled: true');
     status.style.display = 'none'; 
 });
 
@@ -145,3 +156,4 @@ window.addEventListener('touchmove', (e) => {
     prevX = e.touches[0].clientX; 
     prevY = e.touches[0].clientY;
 });
+
