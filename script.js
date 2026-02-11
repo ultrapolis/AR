@@ -4,15 +4,8 @@ const sceneEl = document.querySelector('a-scene');
 const video = document.querySelector('#v');
 const model1 = document.querySelector('#model-to-rotate');
 const hiddenViewer = document.querySelector('#hidden-viewer');
-const arButton = document.querySelector('#ar-button'); // Наша новая кнопка
+const arButton = document.querySelector('#ar-button');
 
-// 1. Создание кнопки видео
-const playBtn = document.createElement('button');
-playBtn.innerHTML = "PAUSE";
-playBtn.style.cssText = "position:fixed; bottom:50px; left:50%; transform:translateX(-50%); z-index:10001; padding:15px 30px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:30px; display:none; font-weight:bold;";
-document.body.appendChild(playBtn);
-
-// 2. Старт
 sceneEl.addEventListener('renderstart', () => {
     status.innerHTML = "Всё готово!";
     btn.style.display = 'block';
@@ -25,71 +18,54 @@ btn.addEventListener('click', () => {
     .catch(() => { sceneEl.systems['mindar-image-system'].start(); });
 });
 
-sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на страницу"; });
+sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на маркер"; });
 
-// 3. ТАРГЕТ 0: ВИДЕО
+// ТАРГЕТЫ 0 и 1 (Видео и Модель 1)
 document.querySelector('#target0').addEventListener("targetFound", () => {
     video.currentTime = 0; video.play();
     status.innerHTML = "Смотрим видео...";
-    playBtn.style.display = 'block'; 
-});
-document.querySelector('#target0').addEventListener("targetLost", () => { 
-    video.pause(); playBtn.style.display = 'none'; 
+    document.body.insertAdjacentHTML('beforeend', '<style id="temp-video-css">#playBtn {display:block !important;}</style>'); 
 });
 
-// 4. ТАРГЕТ 1: МОДЕЛЬ 1
 document.querySelector('#target1').addEventListener("targetFound", () => { 
     status.innerHTML = "Крутите модель 1!"; 
 });
 
-// 5. ТАРГЕТ 2: ВЫЗОВ КНОПКИ АКТИВАЦИИ
+// ТАРГЕТ 2: ПОКАЗ КНОПКИ
 document.querySelector('#target2').addEventListener("targetFound", () => {
-    status.innerHTML = "Маркер найден!";
-    arButton.style.display = 'block'; // Показываем кнопку
+    status.innerHTML = "МАРКЕР НАЙДЕН!";
+    arButton.style.display = 'block';
 });
 
-document.querySelector('#target2').addEventListener("targetLost", () => {
-    // Не скрываем кнопку сразу, чтобы пользователь успел нажать,
-    // если маркер чуть "дрожит"
-});
-
-// ГЛАВНОЕ: Запуск AR по клику пользователя
+// ГЛАВНЫЙ ФИКС ДЛЯ ЗАПУСКА
 arButton.addEventListener('click', () => {
-    status.innerHTML = "ЗАПУСК AR...";
-    hiddenViewer.activateAR();
-    arButton.style.display = 'none'; // Прячем после нажатия
+    status.innerHTML = "ЗАПУСК СИСТЕМНОГО AR...";
+    
+    // Принудительно "будим" модель перед активацией
+    hiddenViewer.style.opacity = "1";
+    
+    // Через 100мс запускаем AR
+    setTimeout(() => {
+        hiddenViewer.activateAR();
+        // Прячем всё обратно через секунду, чтобы не мешало
+        setTimeout(() => {
+            hiddenViewer.style.opacity = "0.01";
+            arButton.style.display = 'none';
+        }, 1000);
+    }, 100);
 });
 
-// 6. УПРАВЛЕНИЕ ВИДЕО
-playBtn.addEventListener('click', () => {
-    if (video.paused) { video.play(); playBtn.innerHTML = "PAUSE"; }
-    else { video.pause(); playBtn.innerHTML = "PLAY"; }
-});
-
-// 7. ВРАЩЕНИЕ ПАЛЬЦЕМ
+// Логика вращения (только для модели 1)
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
-
-window.addEventListener('touchstart', (e) => {
-    isDragging = true;
-    previousMousePosition.x = e.touches[0].clientX;
-    previousMousePosition.y = e.touches[0].clientY;
-});
-
+window.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition.x = e.touches[0].clientX; previousMousePosition.y = e.touches[0].clientY; });
 window.addEventListener('touchend', () => { isDragging = false; });
-
 window.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    if (status.innerHTML.includes("модель 1")) {
-        const deltaX = e.touches[0].clientX - previousMousePosition.x;
-        const deltaY = e.touches[0].clientY - previousMousePosition.y;
-        let rot = model1.getAttribute('rotation');
-        model1.setAttribute('rotation', {
-            x: rot.x + deltaY * 0.5,
-            y: rot.y + deltaX * 0.8,
-            z: rot.z
-        });
-    }
+    if (!isDragging || !status.innerHTML.includes("модель 1")) return;
+    const deltaX = e.touches[0].clientX - previousMousePosition.x;
+    const deltaY = e.touches[0].clientY - previousMousePosition.y;
+    let rot = model1.getAttribute('rotation');
+    model1.setAttribute('rotation', { x: rot.x + deltaY * 0.5, y: rot.y + deltaX * 0.8, z: rot.z });
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
