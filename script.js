@@ -110,14 +110,16 @@ enter360Btn.addEventListener('click', () => {
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
     
-    // Скрываем видео и ПОЛНОСТЬЮ останавливаем звук
     skyPortal.setAttribute('visible', 'false');
     video.pause();
     video.currentTime = 0;
     
-    // Выключаем гироскоп и сбрасываем взгляд
+    // Выключаем гироскоп
     cameraEl.setAttribute('look-controls', 'enabled: false');
-    cameraEl.setAttribute('rotation', '0 0 0');
+    
+    // Сбрасываем вращение камеры в ноль (важно!)
+    cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
+    cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     
     status.style.display = 'block';
     status.innerHTML = "Наведите на маркер";
@@ -156,4 +158,5 @@ window.addEventListener('touchmove', (e) => {
     prevX = e.touches[0].clientX; 
     prevY = e.touches[0].clientY;
 });
+
 
