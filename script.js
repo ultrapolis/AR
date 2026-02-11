@@ -19,6 +19,12 @@ sceneEl.addEventListener('renderstart', () => {
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
+    status.innerHTML = "Инициализация...";
+    
+    // Принудительно запускаем и тут же ставим на паузу все видео ассеты
+    video.play(); 
+    video.pause(); 
+    
     sceneEl.systems['mindar-image-system'].start();
 });
 
@@ -84,4 +90,5 @@ window.addEventListener('touchmove', (e) => {
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
+
 
