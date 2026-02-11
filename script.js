@@ -41,14 +41,16 @@ document.querySelector('#target3').addEventListener("targetFound", () => {
 
 // Клик по шару (вход в 360)
 portalButton.addEventListener('click', () => {
+    console.log("Portal clicked!"); // Проверим в консоли, доходит ли клик
     status.innerHTML = "РЕЖИМ 360 (Гироскоп)";
     skyPortal.setAttribute('visible', 'true');
     exitBtn.setAttribute('visible', 'true');
-    video.play();
     
-    // ВКЛЮЧАЕМ ГИРОСКОП (look-controls)
+    video.currentTime = 0; // Начинаем сначала
+    video.play(); 
+    
     cameraEl.setAttribute('look-controls', 'enabled: true');
-    
+   
     // Опционально: можно остановить MindAR, чтобы не греть телефон, 
     // но тогда при выходе нужно будет запускать снова. Пока оставим.
 });
@@ -82,3 +84,4 @@ window.addEventListener('touchmove', (e) => {
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
+
