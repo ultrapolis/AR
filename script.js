@@ -7,10 +7,10 @@ const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
 const closeBtn = document.querySelector('#close-btn');
 
-// Элементы 360
+// Кнопки портала
 const skyPortal = document.querySelector('#sky-portal');
-const portalButton = document.querySelector('#portal-button');
-const exitBtn = document.querySelector('#exit-btn');
+const enter360Btn = document.querySelector('#enter-360');
+const exit360Btn = document.querySelector('#exit-360');
 const cameraEl = document.querySelector('#cam');
 
 sceneEl.addEventListener('renderstart', () => {
@@ -20,70 +20,67 @@ sceneEl.addEventListener('renderstart', () => {
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
-    status.innerHTML = "Инициализация...";
-    video.play().then(() => { 
-        video.pause(); 
-        sceneEl.systems['mindar-image-system'].start(); 
-    }).catch(() => { 
-        sceneEl.systems['mindar-image-system'].start(); 
-    });
+    video.play().then(() => { video.pause(); });
+    sceneEl.systems['mindar-image-system'].start();
 });
 
-sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на маркеры"; });
-
-// ТАРГЕТЫ 0, 1, 2
-document.querySelector('#target0').addEventListener("targetFound", () => { video.play(); status.innerHTML = "Смотрим видео"; });
+// Таргеты
+document.querySelector('#target0').addEventListener("targetFound", () => { video.play(); status.innerHTML = "Видео активно"; });
 document.querySelector('#target0').addEventListener("targetLost", () => { video.pause(); });
-document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "Крутите модель 1"; });
+
+document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "модель 1"; });
 
 document.querySelector('#target2').addEventListener("targetFound", () => { 
-    status.innerHTML = "Крутите модель 2"; 
+    status.innerHTML = "модель 2"; 
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
 });
 
+// Логика ПОРТАЛА (Таргет 3)
+document.querySelector('#target3').addEventListener("targetFound", () => {
+    status.innerHTML = "Маркер портала найден";
+    enter360Btn.style.display = 'block'; // Показываем кнопку входа
+});
+document.querySelector('#target3').addEventListener("targetLost", () => {
+    enter360Btn.style.display = 'none';
+});
+
+// Нажатие на кнопку "ВОЙТИ В ПОРТАЛ"
+enter360Btn.addEventListener('click', () => {
+    enter360Btn.style.display = 'none';
+    exit360Btn.style.display = 'block';
+    skyPortal.setAttribute('visible', 'true');
+    video.play();
+    cameraEl.setAttribute('look-controls', 'enabled: true');
+    status.innerHTML = "Вы внутри портала";
+});
+
+// Нажатие на кнопку "ВЫЙТИ ИЗ 360"
+exit360Btn.addEventListener('click', () => {
+    exit360Btn.style.display = 'none';
+    skyPortal.setAttribute('visible', 'false');
+    cameraEl.setAttribute('look-controls', 'enabled: false');
+    cameraEl.setAttribute('rotation', '0 0 0');
+    status.innerHTML = "Наведите на маркер";
+});
+
+// Закрытие модели 2
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
 });
 
-// ТАРГЕТ 3: ЛОГИКА ПОРТАЛА
-const enterPortal = () => {
-    status.innerHTML = "РЕЖИМ 360 ВКЛЮЧЕН";
-    skyPortal.setAttribute('visible', 'true');
-    exitBtn.setAttribute('visible', 'true');
-    video.currentTime = 0;
-    video.play();
-    cameraEl.setAttribute('look-controls', 'enabled: true');
-};
-
-portalButton.addEventListener('click', enterPortal);
-portalButton.addEventListener('mousedown', enterPortal); // Доп. для iOS
-
-exitBtn.addEventListener('click', () => {
-    skyPortal.setAttribute('visible', 'false');
-    exitBtn.setAttribute('visible', 'false');
-    cameraEl.setAttribute('look-controls', 'enabled: false');
-    cameraEl.setAttribute('rotation', '0 0 0');
-});
-
-// ВРАЩЕНИЕ
+// Вращение моделей
 let isDragging = false;
-let previousMousePosition = { x: 0, y: 0 };
-window.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition.x = e.touches[0].clientX; previousMousePosition.y = e.touches[0].clientY; });
-window.addEventListener('touchend', () => { isDragging = false; });
+let prevX = 0; let prevY = 0;
+window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; });
+window.addEventListener('touchend', () => isDragging = false);
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    let activeModel = null;
-    if (status.innerHTML.includes("модель 1")) activeModel = model1;
-    else if (status.innerHTML.includes("модель 2")) activeModel = freeModel;
-
-    if (activeModel) {
-        const deltaX = e.touches[0].clientX - previousMousePosition.x;
-        const deltaY = e.touches[0].clientY - previousMousePosition.y;
-        let rot = activeModel.getAttribute('rotation');
-        activeModel.setAttribute('rotation', { x: rot.x + deltaY * 0.5, y: rot.y + deltaX * 0.8, z: rot.z });
+    let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
+    if (active) {
+        let rot = active.getAttribute('rotation');
+        active.setAttribute('rotation', { x: rot.x + (e.touches[0].clientY - prevY) * 0.5, y: rot.y + (e.touches[0].clientX - prevX) * 0.8, z: rot.z });
     }
-    previousMousePosition.x = e.touches[0].clientX;
-    previousMousePosition.y = e.touches[0].clientY;
+    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
