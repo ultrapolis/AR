@@ -22,12 +22,20 @@
 
     <button id="close-btn" style="display:none; position:fixed; top:20px; right:20px; z-index:10005; padding:15px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:50%; width:50px; height:50px; font-weight:bold;">✕</button>
 
-    <a-scene 
+    <!-- <a-scene 
         id="scene"
         mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 0.01;" 
         embedded color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights: false, exposure: 2.0;" 
-        vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+        renderer="colorManagement: true, physicallyCorrectLights: false, exposure: 2.0;"
+        device-orientation-permission-ui="enabled: true"
+        vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"> -->
+
+        <a-scene 
+    id="scene"
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+    embedded 
+    device-orientation-permission-ui="enabled: true" 
+    vr-mode-ui="enabled: false">
         
         <a-entity light="type: ambient; color: #FFF; intensity: 2.0"></a-entity>
         <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="0 1 1"></a-entity>
@@ -66,5 +74,6 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
