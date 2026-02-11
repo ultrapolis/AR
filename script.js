@@ -46,19 +46,23 @@ document.querySelector('#target3').addEventListener("targetFound", () => {
 });
 
 // Клик по шару (вход в 360)
+// Вход в портал (клик по голубому шару)
 portalButton.addEventListener('click', () => {
-    console.log("Portal clicked!"); // Проверим в консоли, доходит ли клик
+    // 1. Меняем статус, чтобы понимать, что клик прошел
     status.innerHTML = "РЕЖИМ 360 (Гироскоп)";
+    
+    // 2. Делаем сферу и кнопку выхода видимыми
     skyPortal.setAttribute('visible', 'true');
     exitBtn.setAttribute('visible', 'true');
     
-    video.currentTime = 0; // Начинаем сначала
+    // 3. Запускаем видео с начала (важно для iOS)
+    video.currentTime = 0; 
     video.play(); 
     
+    // 4. Включаем гироскоп, чтобы можно было крутить головой
     cameraEl.setAttribute('look-controls', 'enabled: true');
-   
-    // Опционально: можно остановить MindAR, чтобы не греть телефон, 
-    // но тогда при выходе нужно будет запускать снова. Пока оставим.
+    
+    console.log("Portal activated");
 });
 
 // Клик по кнопке EXIT (выход из 360)
@@ -90,5 +94,6 @@ window.addEventListener('touchmove', (e) => {
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
+
 
 
