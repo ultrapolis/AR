@@ -5,12 +5,13 @@ const video = document.querySelector('#v');
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
+const closeBtn = document.querySelector('#close-btn');
 
-// Новые элементы для 360
+// Элементы 360
 const skyPortal = document.querySelector('#sky-portal');
 const portalButton = document.querySelector('#portal-button');
 const exitBtn = document.querySelector('#exit-btn');
-const cameraEl = document.querySelector('a-camera');
+const cameraEl = document.querySelector('#cam');
 
 sceneEl.addEventListener('renderstart', () => {
     status.innerHTML = "Всё готово!";
@@ -20,61 +21,53 @@ sceneEl.addEventListener('renderstart', () => {
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
     status.innerHTML = "Инициализация...";
-    
-    // Принудительно запускаем и тут же ставим на паузу все видео ассеты
-    video.play(); 
-    video.pause(); 
-    
-    sceneEl.systems['mindar-image-system'].start();
+    video.play().then(() => { 
+        video.pause(); 
+        sceneEl.systems['mindar-image-system'].start(); 
+    }).catch(() => { 
+        sceneEl.systems['mindar-image-system'].start(); 
+    });
 });
 
-// ТАРГЕТЫ 0, 1, 2 (как были)
-document.querySelector('#target0').addEventListener("targetFound", () => { video.play(); status.innerHTML = "Видео 1"; });
-document.querySelector('#target0').addEventListener("targetLost", () => { video.pause(); });
+sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на маркеры"; });
 
+// ТАРГЕТЫ 0, 1, 2
+document.querySelector('#target0').addEventListener("targetFound", () => { video.play(); status.innerHTML = "Смотрим видео"; });
+document.querySelector('#target0').addEventListener("targetLost", () => { video.pause(); });
 document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "Крутите модель 1"; });
 
 document.querySelector('#target2').addEventListener("targetFound", () => { 
     status.innerHTML = "Крутите модель 2"; 
     worldContainer.setAttribute('visible', 'true');
+    closeBtn.style.display = 'block';
 });
-document.querySelector('#target2').addEventListener("targetLost", () => { worldContainer.setAttribute('visible', 'false'); });
+
+closeBtn.addEventListener('click', () => {
+    worldContainer.setAttribute('visible', 'false');
+    closeBtn.style.display = 'none';
+});
 
 // ТАРГЕТ 3: ЛОГИКА ПОРТАЛА
-document.querySelector('#target3').addEventListener("targetFound", () => {
-    status.innerHTML = "НАЖМИТЕ НА ШАР ДЛЯ ВХОДА В 360";
-});
-
-// Клик по шару (вход в 360)
-// Вход в портал (клик по голубому шару)
-portalButton.addEventListener('click', () => {
-    // 1. Меняем статус, чтобы понимать, что клик прошел
-    status.innerHTML = "РЕЖИМ 360 (Гироскоп)";
-    
-    // 2. Делаем сферу и кнопку выхода видимыми
+const enterPortal = () => {
+    status.innerHTML = "РЕЖИМ 360 ВКЛЮЧЕН";
     skyPortal.setAttribute('visible', 'true');
     exitBtn.setAttribute('visible', 'true');
-    
-    // 3. Запускаем видео с начала (важно для iOS)
-    video.currentTime = 0; 
-    video.play(); 
-    
-    // 4. Включаем гироскоп, чтобы можно было крутить головой
+    video.currentTime = 0;
+    video.play();
     cameraEl.setAttribute('look-controls', 'enabled: true');
-    
-    console.log("Portal activated");
-});
+};
 
-// Клик по кнопке EXIT (выход из 360)
+portalButton.addEventListener('click', enterPortal);
+portalButton.addEventListener('mousedown', enterPortal); // Доп. для iOS
+
 exitBtn.addEventListener('click', () => {
     skyPortal.setAttribute('visible', 'false');
     exitBtn.setAttribute('visible', 'false');
     cameraEl.setAttribute('look-controls', 'enabled: false');
-    cameraEl.setAttribute('rotation', '0 0 0'); // Сброс взгляда
-    status.innerHTML = "Наведите на маркер";
+    cameraEl.setAttribute('rotation', '0 0 0');
 });
 
-// УНИВЕРСАЛЬНОЕ ВРАЩЕНИЕ (для моделей)
+// ВРАЩЕНИЕ
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 window.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition.x = e.touches[0].clientX; previousMousePosition.y = e.touches[0].clientY; });
@@ -94,6 +87,3 @@ window.addEventListener('touchmove', (e) => {
     previousMousePosition.x = e.touches[0].clientX;
     previousMousePosition.y = e.touches[0].clientY;
 });
-
-
-
