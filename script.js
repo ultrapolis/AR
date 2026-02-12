@@ -96,7 +96,7 @@ enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
     
-    // Разрешение на датчики
+    // 1. Запрос разрешения на датчики (для iPhone)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
             .then(permissionState => {
@@ -108,14 +108,25 @@ enter360Btn.addEventListener('click', () => {
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
-    // Принудительно выводим сферу и запускаем видео
+    // 2. Делаем сферу видимой
     skyPortal.setAttribute('visible', 'true');
+    
+    // 3. ПРИНУДИТЕЛЬНЫЙ ЗАПУСК ВИДЕО
+    // Сначала сбрасываем всё, что могло его "заморозить"
+    video360.muted = false; // Убеждаемся, что звук разрешен (после клика это можно)
     video360.currentTime = 0;
     
-    // Добавим небольшую задержку запуска, чтобы браузер успел отрисовать сферу
-    setTimeout(() => {
-        video360.play();
-    }, 100);
+    // Пытаемся запустить с обработкой ошибки
+    const playPromise = video360.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            console.log("360 видео успешно запущено");
+        }).catch(error => {
+            console.log("Ошибка автоплея, пробуем еще раз...");
+            // Если не вышло, пробуем "толкнуть" еще раз через 100мс
+            setTimeout(() => { video360.play(); }, 100);
+        });
+    }
     
     status.style.display = 'none'; 
 });
@@ -159,3 +170,4 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
