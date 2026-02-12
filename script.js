@@ -21,28 +21,15 @@ const cameraEl = document.querySelector('#cam');
 // ==========================================
 // БЛОК 2: Загрузка ресурсов
 // ==========================================
-const assets = document.querySelector('a-assets');
-
 assets.addEventListener('progress', (e) => {
-    const percent = Math.floor(e.detail.progress * 100);
-    status.innerHTML = `Контент загружается: ${percent}%`;
-});
-
-assets.addEventListener('loaded', () => {
-    status.innerHTML = "Почти готово... Нажмите START";
-    btn.style.display = 'block';
-});
-
-btn.addEventListener('click', () => {
-    btn.style.display = 'none';
-    status.innerHTML = "Запуск камеры...";
-    video1.play().then(() => { video1.pause(); });
-    video360.play().then(() => { video360.pause(); });
-    sceneEl.systems['mindar-image-system'].start();
-});
-
-sceneEl.addEventListener("arReady", () => { 
-    status.innerHTML = "Наведите на маркеры"; 
+    // Проверяем, что e.detail.progress — число и оно больше 0
+    const progress = e.detail.progress;
+    if (!isNaN(progress) && progress > 0) {
+        const percent = Math.floor(progress * 100);
+        status.innerHTML = `Контент загружается: ${percent}%`;
+    } else {
+        status.innerHTML = `Контент загружается...`;
+    }
 });
 
 // ==========================================
@@ -162,3 +149,4 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
