@@ -1,5 +1,5 @@
 // ==========================================
-// БЛОК 1: Объявление переменных
+// БЛОК 1: Переменные
 // ==========================================
 const btn = document.querySelector('#btn');
 const status = document.querySelector('#status');
@@ -14,21 +14,20 @@ const closeBtn = document.querySelector('#close-btn');
 const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
-const cameraEl = document.querySelector('#cam');
 const playPauseBtn = document.querySelector('#play-pause-360');
+const zoomSlider = document.querySelector('#zoom-slider');
+const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Загрузка ресурсов и запуск
+// БЛОК 2: Загрузка ресурсов
 // ==========================================
 const assets = document.querySelector('a-assets');
 
-// Пока всё качается, пишем прогресс
 assets.addEventListener('progress', (e) => {
     const percent = Math.floor(e.detail.progress * 100);
     status.innerHTML = `Контент загружается: ${percent}%`;
 });
 
-// Когда ассеты готовы
 assets.addEventListener('loaded', () => {
     status.innerHTML = "Почти готово... Нажмите START";
     btn.style.display = 'block';
@@ -36,34 +35,26 @@ assets.addEventListener('loaded', () => {
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
-    status.innerHTML = "Запуск камеры..."; // Чтобы не было пустоты
-    
-    // Принудительно разблокируем видео
+    status.innerHTML = "Запуск камеры...";
     video1.play().then(() => { video1.pause(); });
     video360.play().then(() => { video360.pause(); });
-    
     sceneEl.systems['mindar-image-system'].start();
 });
 
-// Когда AR реально готов к работе
 sceneEl.addEventListener("arReady", () => { 
     status.innerHTML = "Наведите на маркеры"; 
 });
 
 // ==========================================
-// БЛОК 3: Обработка таргетов 0, 1, 2
+// БЛОК 3: Таргеты 0, 1, 2
 // ==========================================
 document.querySelector('#target0').addEventListener("targetFound", () => { 
     video1.play(); 
     status.innerHTML = "Видео активно"; 
 });
-document.querySelector('#target0').addEventListener("targetLost", () => { 
-    video1.pause(); 
-});
+document.querySelector('#target0').addEventListener("targetLost", () => { video1.pause(); });
 
-document.querySelector('#target1').addEventListener("targetFound", () => { 
-    status.innerHTML = "модель 1"; 
-});
+document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "модель 1"; });
 
 document.querySelector('#target2').addEventListener("targetFound", () => { 
     status.innerHTML = "модель 2"; 
@@ -77,7 +68,7 @@ closeBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// БЛОК 4: Поиск таргета 3 (Портал)
+// БЛОК 4: Поиск портала (Таргет 3)
 // ==========================================
 document.querySelector('#target3').addEventListener("targetFound", () => {
     if (skyPortal.getAttribute('visible') === false) {
@@ -85,20 +76,21 @@ document.querySelector('#target3').addEventListener("targetFound", () => {
         enter360Btn.style.display = 'block';
     }
 });
-
 document.querySelector('#target3').addEventListener("targetLost", () => {
     enter360Btn.style.display = 'none';
 });
 
 // ==========================================
-// БЛОК 5: Логика ВХОДА в портал 360
+// БЛОК 5: ВХОД В ПОРТАЛ
 // ==========================================
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
-    playPauseBtn.style.display = 'block'; // Показываем кнопку паузы
+    playPauseBtn.style.display = 'block';
+    zoomSlider.style.display = 'block';
     playPauseBtn.innerHTML = "PAUSE";
     
+    // Датчики
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
             if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
@@ -109,11 +101,10 @@ enter360Btn.addEventListener('click', () => {
 
     skyPortal.setAttribute('visible', 'true');
     video360.currentTime = 0;
-    video360.play();
+    setTimeout(() => { video360.play(); }, 150);
     status.style.display = 'none'; 
 });
 
-// Логика Паузы/Плея
 playPauseBtn.addEventListener('click', () => {
     if (video360.paused) {
         video360.play();
@@ -124,30 +115,35 @@ playPauseBtn.addEventListener('click', () => {
     }
 });
 
+zoomSlider.addEventListener('input', (e) => {
+    cameraEl.setAttribute('camera', 'fov', e.target.value);
+});
+
 // ==========================================
-// БЛОК 6: Логика ВЫХОДА из портала 360
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
-    playPauseBtn.style.display = 'none'; // Прячем паузу
+    playPauseBtn.style.display = 'none';
+    zoomSlider.style.display = 'none';
     
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
     
     cameraEl.setAttribute('look-controls', 'enabled: false');
-    
-    // Сброс вращения
     if(cameraEl.components['look-controls']) {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
+    cameraEl.setAttribute('camera', 'fov', 100);
+    zoomSlider.value = 100;
     
     status.style.display = 'block';
     status.innerHTML = "Наведите на маркер";
 });
 
 // ==========================================
-// БЛОК 7: Вращение моделей пальцем
+// БЛОК 7: Вращение
 // ==========================================
 let isDragging = false;
 let prevX = 0; let prevY = 0;
@@ -166,5 +162,3 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
-
-
