@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="status">Загрузка ресурсов: 0%</div>
+   <div id="status">Загрузка ресурсов: 0%</div>
     <button id="btn" style="display:none;">START</button>
     
     <button id="enter-360" style="display:none; position:fixed; bottom:100px; left:50%; transform:translateX(-50%); z-index:10006; padding:20px 30px; background:#00cfd5; color:white; border:none; border-radius:50px; font-weight:bold;">ВОЙТИ В ПОРТАЛ</button>
+    
+    <button id="play-pause-360" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:10007; padding:10px 20px; background:rgba(255,255,255,0.7); border:none; border-radius:20px; font-weight:bold;">PAUSE</button>
+
     <button id="exit-360" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10007; padding:15px 25px; background:#ff4444; color:white; border:none; border-radius:30px; font-weight:bold;">ВЫЙТИ ИЗ 360</button>
-    <button id="close-btn" style="display:none; position:fixed; top:20px; right:20px; z-index:10005; padding:15px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:50%; width:50px; height:50px;">✕</button>
 
     <a-scene 
         id="scene"
@@ -24,6 +26,8 @@
         renderer="colorManagement: true, exposure: 2.0;" 
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: true">
+        
+        <a-camera id="cam" position="0 0 0" look-controls="enabled: false" fov="100"></a-camera>
         
         <a-entity light="type: ambient; color: #FFF; intensity: 2.0"></a-entity>
         <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="0 1 1"></a-entity>
@@ -35,8 +39,6 @@
             <a-asset-item id="myModel" src="./model1.glb"></a-asset-item>
             <a-asset-item id="myModel2" src="./model2_new.glb"></a-asset-item>
         </a-assets>
-
-        <a-camera id="cam" position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
             <a-video src="#v1" width="1" height="1" position="0 0 0.1"></a-video>
@@ -62,3 +64,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
