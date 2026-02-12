@@ -107,7 +107,7 @@ zoomSlider.addEventListener('input', (e) => {
 });
 
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА
+// БЛОК 6: ВЫХОДА ИЗ ПОРТАЛА
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
@@ -122,6 +122,8 @@ exit360Btn.addEventListener('click', () => {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
+    
+    // Сбрасываем FOV через атрибут камеры
     cameraEl.setAttribute('camera', 'fov', 100);
     zoomSlider.value = 100;
     
@@ -149,4 +151,5 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
