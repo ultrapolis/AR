@@ -4,8 +4,8 @@
 const btn = document.querySelector('#btn');
 const status = document.querySelector('#status');
 const sceneEl = document.querySelector('a-scene');
-const video1 = document.querySelector('#v1'); // Обычное видео
-const video360 = document.querySelector('#v360'); // Видео для портала
+const video1 = document.querySelector('#v1'); 
+const video360 = document.querySelector('#v360'); 
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
@@ -21,29 +21,30 @@ const cameraEl = document.querySelector('#cam');
 // ==========================================
 const assets = document.querySelector('a-assets');
 
-// Отслеживаем прогресс загрузки (модели + видео)
+// Пока всё качается, пишем прогресс
 assets.addEventListener('progress', (e) => {
     const percent = Math.floor(e.detail.progress * 100);
-    status.innerHTML = `Загрузка контента: ${percent}%`;
+    status.innerHTML = `Контент загружается: ${percent}%`;
 });
 
-// Когда всё загружено
+// Когда ассеты готовы
 assets.addEventListener('loaded', () => {
-    status.innerHTML = "Контент загружен!";
+    status.innerHTML = "Почти готово... Нажмите START";
     btn.style.display = 'block';
 });
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
+    status.innerHTML = "Запуск камеры..."; // Чтобы не было пустоты
     
-    // "Будим" оба видео для iOS (обязательный жест)
+    // Принудительно разблокируем видео
     video1.play().then(() => { video1.pause(); });
     video360.play().then(() => { video360.pause(); });
     
     sceneEl.systems['mindar-image-system'].start();
 });
 
-// Когда MindAR инициализировался
+// Когда AR реально готов к работе
 sceneEl.addEventListener("arReady", () => { 
     status.innerHTML = "Наведите на маркеры"; 
 });
@@ -69,7 +70,6 @@ document.querySelector('#target2').addEventListener("targetFound", () => {
     closeBtn.style.display = 'block';
 });
 
-// Кнопка закрытия захваченной модели 2
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
@@ -79,7 +79,6 @@ closeBtn.addEventListener('click', () => {
 // БЛОК 4: Поиск таргета 3 (Портал)
 // ==========================================
 document.querySelector('#target3').addEventListener("targetFound", () => {
-    // Показываем кнопку входа, только если мы еще не внутри портала
     if (skyPortal.getAttribute('visible') === false) {
         status.innerHTML = "Маркер портала найден";
         enter360Btn.style.display = 'block';
@@ -97,22 +96,26 @@ enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
     
-    // Запрос разрешения на датчики (для iPhone)
+    // Разрешение на датчики
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
             .then(permissionState => {
                 if (permissionState === 'granted') {
                     cameraEl.setAttribute('look-controls', 'enabled: true');
                 }
-            })
-            .catch(console.error);
+            });
     } else {
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
+    // Принудительно выводим сферу и запускаем видео
     skyPortal.setAttribute('visible', 'true');
     video360.currentTime = 0;
-    video360.play(); // Играет только портальное видео
+    
+    // Добавим небольшую задержку запуска, чтобы браузер успел отрисовать сферу
+    setTimeout(() => {
+        video360.play();
+    }, 100);
     
     status.style.display = 'none'; 
 });
@@ -122,15 +125,11 @@ enter360Btn.addEventListener('click', () => {
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
-    
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
-    video360.currentTime = 0;
     
-    // Выключаем гироскоп
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
-    // Сбрасываем вращение камеры (AFRAME метод)
     if(cameraEl.components['look-controls']) {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
@@ -144,24 +143,12 @@ exit360Btn.addEventListener('click', () => {
 // БЛОК 7: Вращение моделей пальцем
 // ==========================================
 let isDragging = false;
-let prevX = 0; 
-let prevY = 0;
-
-window.addEventListener('touchstart', (e) => { 
-    isDragging = true; 
-    prevX = e.touches[0].clientX; 
-    prevY = e.touches[0].clientY; 
-});
-
+let prevX = 0; let prevY = 0;
+window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; });
 window.addEventListener('touchend', () => isDragging = false);
-
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    
-    let active = null;
-    if (status.innerHTML.includes("модель 1")) active = model1;
-    else if (status.innerHTML.includes("модель 2")) active = freeModel;
-
+    let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
     if (active) {
         let rot = active.getAttribute('rotation');
         active.setAttribute('rotation', { 
@@ -170,6 +157,5 @@ window.addEventListener('touchmove', (e) => {
             z: rot.z 
         });
     }
-    prevX = e.touches[0].clientX; 
-    prevY = e.touches[0].clientY;
+    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
