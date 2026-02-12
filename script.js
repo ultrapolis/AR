@@ -4,7 +4,8 @@
 const btn = document.querySelector('#btn');
 const status = document.querySelector('#status');
 const sceneEl = document.querySelector('a-scene');
-const video = document.querySelector('#v');
+const video1 = document.querySelector('#v1'); // Обычное видео
+const video360 = document.querySelector('#v360'); // Видео для портала
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
@@ -16,20 +17,33 @@ const exit360Btn = document.querySelector('#exit-360');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Запуск системы (Кнопка START)
+// БЛОК 2: Загрузка ресурсов и запуск
 // ==========================================
-sceneEl.addEventListener('renderstart', () => {
-    status.innerHTML = "Всё готово!";
+const assets = document.querySelector('a-assets');
+
+// Отслеживаем прогресс загрузки (модели + видео)
+assets.addEventListener('progress', (e) => {
+    const percent = Math.floor(e.detail.progress * 100);
+    status.innerHTML = `Загрузка контента: ${percent}%`;
+});
+
+// Когда всё загружено
+assets.addEventListener('loaded', () => {
+    status.innerHTML = "Контент загружен!";
     btn.style.display = 'block';
 });
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
-    // Разблокировка видео для iOS
-    video.play().then(() => { video.pause(); });
+    
+    // "Будим" оба видео для iOS (обязательный жест)
+    video1.play().then(() => { video1.pause(); });
+    video360.play().then(() => { video360.pause(); });
+    
     sceneEl.systems['mindar-image-system'].start();
 });
 
+// Когда MindAR инициализировался
 sceneEl.addEventListener("arReady", () => { 
     status.innerHTML = "Наведите на маркеры"; 
 });
@@ -38,11 +52,11 @@ sceneEl.addEventListener("arReady", () => {
 // БЛОК 3: Обработка таргетов 0, 1, 2
 // ==========================================
 document.querySelector('#target0').addEventListener("targetFound", () => { 
-    video.play(); 
+    video1.play(); 
     status.innerHTML = "Видео активно"; 
 });
 document.querySelector('#target0').addEventListener("targetLost", () => { 
-    video.pause(); 
+    video1.pause(); 
 });
 
 document.querySelector('#target1').addEventListener("targetFound", () => { 
@@ -83,7 +97,7 @@ enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
     
-    // Пытаемся активировать датчики (важно для iOS)
+    // Запрос разрешения на датчики (для iPhone)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
             .then(permissionState => {
@@ -93,13 +107,12 @@ enter360Btn.addEventListener('click', () => {
             })
             .catch(console.error);
     } else {
-        // Для устройств, где разрешение не требуется
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
     skyPortal.setAttribute('visible', 'true');
-    video.currentTime = 0;
-    video.play();
+    video360.currentTime = 0;
+    video360.play(); // Играет только портальное видео
     
     status.style.display = 'none'; 
 });
@@ -111,15 +124,17 @@ exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
     
     skyPortal.setAttribute('visible', 'false');
-    video.pause();
-    video.currentTime = 0;
+    video360.pause();
+    video360.currentTime = 0;
     
     // Выключаем гироскоп
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
-    // Сбрасываем вращение камеры в ноль (важно!)
-    cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
-    cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
+    // Сбрасываем вращение камеры (AFRAME метод)
+    if(cameraEl.components['look-controls']) {
+        cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
+        cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
+    }
     
     status.style.display = 'block';
     status.innerHTML = "Наведите на маркер";
@@ -158,5 +173,3 @@ window.addEventListener('touchmove', (e) => {
     prevX = e.touches[0].clientX; 
     prevY = e.touches[0].clientY;
 });
-
-
