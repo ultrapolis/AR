@@ -15,6 +15,7 @@ const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
 const cameraEl = document.querySelector('#cam');
+const playPauseBtn = document.querySelector('#play-pause-360');
 
 // ==========================================
 // БЛОК 2: Загрузка ресурсов и запуск
@@ -95,40 +96,32 @@ document.querySelector('#target3').addEventListener("targetLost", () => {
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
+    playPauseBtn.style.display = 'block'; // Показываем кнопку паузы
+    playPauseBtn.innerHTML = "PAUSE";
     
-    // 1. Запрос разрешения на датчики (для iPhone)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(permissionState => {
-                if (permissionState === 'granted') {
-                    cameraEl.setAttribute('look-controls', 'enabled: true');
-                }
-            });
+        DeviceOrientationEvent.requestPermission().then(state => {
+            if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
+        });
     } else {
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
-    // 2. Делаем сферу видимой
     skyPortal.setAttribute('visible', 'true');
-    
-    // 3. ПРИНУДИТЕЛЬНЫЙ ЗАПУСК ВИДЕО
-    // Сначала сбрасываем всё, что могло его "заморозить"
-    video360.muted = false; // Убеждаемся, что звук разрешен (после клика это можно)
     video360.currentTime = 0;
-    
-    // Пытаемся запустить с обработкой ошибки
-    const playPromise = video360.play();
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            console.log("360 видео успешно запущено");
-        }).catch(error => {
-            console.log("Ошибка автоплея, пробуем еще раз...");
-            // Если не вышло, пробуем "толкнуть" еще раз через 100мс
-            setTimeout(() => { video360.play(); }, 100);
-        });
-    }
-    
+    video360.play();
     status.style.display = 'none'; 
+});
+
+// Логика Паузы/Плея
+playPauseBtn.addEventListener('click', () => {
+    if (video360.paused) {
+        video360.play();
+        playPauseBtn.innerHTML = "PAUSE";
+    } else {
+        video360.pause();
+        playPauseBtn.innerHTML = "PLAY";
+    }
 });
 
 // ==========================================
@@ -136,11 +129,14 @@ enter360Btn.addEventListener('click', () => {
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
+    playPauseBtn.style.display = 'none'; // Прячем паузу
+    
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
     
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
+    // Сброс вращения
     if(cameraEl.components['look-controls']) {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
@@ -170,4 +166,5 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
