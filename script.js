@@ -14,52 +14,68 @@ const closeBtn = document.querySelector('#close-btn');
 const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
-const uiBottom = document.querySelector('#ui-bottom-360'); // Панель зума и паузы
+const uiBottom = document.querySelector('#ui-bottom-360');
 const playPauseBtn = document.querySelector('#play-pause-360');
 const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Загрузка ресурсов (с защитой от зависания)
+// БЛОК 2: Улучшенный запуск
 // ==========================================
 const assets = document.querySelector('a-assets');
 
-// 1. Обработка прогресса
 assets.addEventListener('progress', (e) => {
     const progress = e.detail.progress;
-    if (typeof progress === 'number' && progress > 0) {
-        const percent = Math.floor(progress * 100);
-        status.innerHTML = `Контент загружается: ${percent}%`;
+    if (typeof progress === 'number' && progress >= 0) {
+        status.innerHTML = `Контент загружается: ${Math.floor(progress * 100)}%`;
     }
 });
 
-// 2. Основная функция активации кнопки
 const activateStart = () => {
-    status.innerHTML = "Почти готово... Нажмите START";
-    btn.style.display = 'block';
+    if (btn.style.display !== 'block') {
+        status.innerHTML = "Ресурсы готовы. Нажмите START";
+        btn.style.display = 'block';
+    }
 };
 
-// 3. Слушаем событие полной загрузки
 assets.addEventListener('loaded', activateStart);
+setTimeout(activateStart, 3000); // Страховка
 
-// 4. СТРАХОВКА: Если ассеты уже в кэше, событие 'loaded' может не сработать.
-// Проверяем через 2 секунды, если кнопка еще не появилась — выводим её принудительно.
-setTimeout(() => {
-    if (btn.style.display === 'none') {
-        console.log("Запуск по таймеру (ресурсы из кэша или сбой события)");
-        activateStart();
-    }
-}, 3000); // 3 секунды ожидания
-
-btn.addEventListener('click', () => {
+btn.addEventListener('click', async () => {
     btn.style.display = 'none';
-    status.innerHTML = "Запуск камеры...";
+    status.innerHTML = "Запрос разрешений...";
+
+    // 1. Сначала спрашиваем гироскоп (важно для iOS до запуска AR)
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+            const permission = await DeviceOrientationEvent.requestPermission();
+            console.log("Датчики:", permission);
+        } catch (err) {
+            console.error("Ошибка датчиков:", err);
+        }
+    }
+
+    status.innerHTML = "Инициализация камеры...";
     
-    // Пытаемся разблокировать видео
-    if(video1) video1.play().then(() => { video1.pause(); }).catch(e => console.log(e));
-    if(video360) video360.play().then(() => { video360.pause(); }).catch(e => console.log(e));
-    
-    sceneEl.systems['mindar-image-system'].start();
+    // 2. Будим видео
+    if(video1) video1.play().then(() => video1.pause());
+    if(video360) video360.play().then(() => video360.pause());
+
+    // 3. Запускаем MindAR
+    try {
+        sceneEl.systems['mindar-image-system'].start();
+    } catch (e) {
+        status.innerHTML = "Ошибка запуска AR. Перезагрузите страницу.";
+        console.error(e);
+    }
+});
+
+sceneEl.addEventListener("arReady", () => { 
+    status.innerHTML = "Наведите на маркеры"; 
+});
+
+sceneEl.addEventListener("arError", (event) => {
+    status.innerHTML = "Ошибка камеры. Проверьте доступ.";
 });
 
 // ==========================================
@@ -173,4 +189,5 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
