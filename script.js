@@ -20,64 +20,81 @@ const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Улучшенный запуск
+// БЛОК 2: Безопасный запуск системы
 // ==========================================
 const assets = document.querySelector('a-assets');
 
+// Показываем загрузку
 assets.addEventListener('progress', (e) => {
     const progress = e.detail.progress;
     if (typeof progress === 'number' && progress >= 0) {
-        status.innerHTML = `Контент загружается: ${Math.floor(progress * 100)}%`;
+        status.innerHTML = `Загрузка контента: ${Math.floor(progress * 100)}%`;
     }
 });
 
+// Кнопка Старт
 const activateStart = () => {
     if (btn.style.display !== 'block') {
-        status.innerHTML = "Ресурсы готовы. Нажмите START";
+        status.innerHTML = "Готово. Нажмите START";
         btn.style.display = 'block';
     }
 };
 
 assets.addEventListener('loaded', activateStart);
-setTimeout(activateStart, 3000); // Страховка
+setTimeout(activateStart, 4000); // Даем 4 секунды на кэш
 
-btn.addEventListener('click', async () => {
+btn.addEventListener('click', () => {
     btn.style.display = 'none';
-    status.innerHTML = "Запрос разрешений...";
+    status.innerHTML = "Настройка разрешений...";
 
-    // 1. Сначала спрашиваем гироскоп (важно для iOS до запуска AR)
+    // 1. Сначала активируем датчики для iOS
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-            const permission = await DeviceOrientationEvent.requestPermission();
-            console.log("Датчики:", permission);
-        } catch (err) {
-            console.error("Ошибка датчиков:", err);
-        }
-    }
-
-    status.innerHTML = "Инициализация камеры...";
-    
-    // 2. Будим видео
-    if(video1) video1.play().then(() => video1.pause());
-    if(video360) video360.play().then(() => video360.pause());
-
-    // 3. Запускаем MindAR
-    try {
-        sceneEl.systems['mindar-image-system'].start();
-    } catch (e) {
-        status.innerHTML = "Ошибка запуска AR. Перезагрузите страницу.";
-        console.error(e);
+        DeviceOrientationEvent.requestPermission()
+            .then(state => {
+                console.log("Датчики наклона: " + state);
+                proceedToAR(); // Идем дальше после клика
+            })
+            .catch(err => {
+                console.log("Датчики отклонены, пробуем запустить AR...");
+                proceedToAR();
+            });
+    } else {
+        proceedToAR();
     }
 });
+
+// Отдельная функция для запуска движка после всех разрешений
+function proceedToAR() {
+    status.innerHTML = "Запуск камеры...";
+    
+    // Будим видео
+    if(video1) video1.play().then(() => video1.pause()).catch(e => {});
+    if(video360) video360.play().then(() => video360.pause()).catch(e => {});
+
+    // Даем браузеру 300мс "продохнуть" перед запуском тяжелого AR-движка
+    setTimeout(() => {
+        try {
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            if (arSystem) {
+                arSystem.start();
+                console.log("MindAR успешно вызван");
+            } else {
+                status.innerHTML = "Система AR не найдена. Обновите страницу.";
+            }
+        } catch (e) {
+            status.innerHTML = "Ошибка: " + e.message;
+            console.error(e);
+        }
+    }, 300);
+}
 
 sceneEl.addEventListener("arReady", () => { 
     status.innerHTML = "Наведите на маркеры"; 
 });
 
 sceneEl.addEventListener("arError", (event) => {
-    status.innerHTML = "Ошибка камеры. Проверьте доступ.";
+    status.innerHTML = "Камера заблокирована. Проверьте настройки.";
 });
-
 // ==========================================
 // БЛОК 3: Таргеты 0, 1, 2
 // ==========================================
@@ -189,5 +206,6 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
