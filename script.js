@@ -20,32 +20,46 @@ const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Загрузка ресурсов
+// БЛОК 2: Загрузка ресурсов (с защитой от зависания)
 // ==========================================
 const assets = document.querySelector('a-assets');
+
+// 1. Обработка прогресса
 assets.addEventListener('progress', (e) => {
     const progress = e.detail.progress;
-    if (typeof progress === 'number' && progress >= 0) {
+    if (typeof progress === 'number' && progress > 0) {
         const percent = Math.floor(progress * 100);
         status.innerHTML = `Контент загружается: ${percent}%`;
     }
 });
 
-assets.addEventListener('loaded', () => {
+// 2. Основная функция активации кнопки
+const activateStart = () => {
     status.innerHTML = "Почти готово... Нажмите START";
     btn.style.display = 'block';
-});
+};
+
+// 3. Слушаем событие полной загрузки
+assets.addEventListener('loaded', activateStart);
+
+// 4. СТРАХОВКА: Если ассеты уже в кэше, событие 'loaded' может не сработать.
+// Проверяем через 2 секунды, если кнопка еще не появилась — выводим её принудительно.
+setTimeout(() => {
+    if (btn.style.display === 'none') {
+        console.log("Запуск по таймеру (ресурсы из кэша или сбой события)");
+        activateStart();
+    }
+}, 3000); // 3 секунды ожидания
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
     status.innerHTML = "Запуск камеры...";
-    video1.play().then(() => { video1.pause(); });
-    video360.play().then(() => { video360.pause(); });
+    
+    // Пытаемся разблокировать видео
+    if(video1) video1.play().then(() => { video1.pause(); }).catch(e => console.log(e));
+    if(video360) video360.play().then(() => { video360.pause(); }).catch(e => console.log(e));
+    
     sceneEl.systems['mindar-image-system'].start();
-});
-
-sceneEl.addEventListener("arReady", () => { 
-    status.innerHTML = "Наведите на маркеры"; 
 });
 
 // ==========================================
@@ -159,3 +173,4 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
