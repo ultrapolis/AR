@@ -14,6 +14,7 @@ const closeBtn = document.querySelector('#close-btn');
 const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
+const uiBottom = document.querySelector('#ui-bottom-360'); // Панель зума и паузы
 const playPauseBtn = document.querySelector('#play-pause-360');
 const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
@@ -21,15 +22,30 @@ const cameraEl = document.querySelector('#cam');
 // ==========================================
 // БЛОК 2: Загрузка ресурсов
 // ==========================================
+const assets = document.querySelector('a-assets');
 assets.addEventListener('progress', (e) => {
-    // Проверяем, что e.detail.progress — число и оно больше 0
     const progress = e.detail.progress;
-    if (!isNaN(progress) && progress > 0) {
+    if (typeof progress === 'number' && progress >= 0) {
         const percent = Math.floor(progress * 100);
         status.innerHTML = `Контент загружается: ${percent}%`;
-    } else {
-        status.innerHTML = `Контент загружается...`;
     }
+});
+
+assets.addEventListener('loaded', () => {
+    status.innerHTML = "Почти готово... Нажмите START";
+    btn.style.display = 'block';
+});
+
+btn.addEventListener('click', () => {
+    btn.style.display = 'none';
+    status.innerHTML = "Запуск камеры...";
+    video1.play().then(() => { video1.pause(); });
+    video360.play().then(() => { video360.pause(); });
+    sceneEl.systems['mindar-image-system'].start();
+});
+
+sceneEl.addEventListener("arReady", () => { 
+    status.innerHTML = "Наведите на маркеры"; 
 });
 
 // ==========================================
@@ -40,15 +56,12 @@ document.querySelector('#target0').addEventListener("targetFound", () => {
     status.innerHTML = "Видео активно"; 
 });
 document.querySelector('#target0').addEventListener("targetLost", () => { video1.pause(); });
-
 document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "модель 1"; });
-
 document.querySelector('#target2').addEventListener("targetFound", () => { 
     status.innerHTML = "модель 2"; 
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
 });
-
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
@@ -73,11 +86,9 @@ document.querySelector('#target3').addEventListener("targetLost", () => {
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
-    playPauseBtn.style.display = 'block';
-    zoomSlider.style.display = 'block';
+    uiBottom.style.display = 'block'; // Показываем всю нижнюю панель
     playPauseBtn.innerHTML = "PAUSE";
     
-    // Датчики
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
             if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
@@ -107,12 +118,11 @@ zoomSlider.addEventListener('input', (e) => {
 });
 
 // ==========================================
-// БЛОК 6: ВЫХОДА ИЗ ПОРТАЛА
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
-    playPauseBtn.style.display = 'none';
-    zoomSlider.style.display = 'none';
+    uiBottom.style.display = 'none';
     
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
@@ -122,8 +132,6 @@ exit360Btn.addEventListener('click', () => {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
-    
-    // Сбрасываем FOV через атрибут камеры
     cameraEl.setAttribute('camera', 'fov', 100);
     zoomSlider.value = 100;
     
@@ -151,5 +159,3 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
-
-
