@@ -9,10 +9,14 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Прячем кнопку VR и системные окна A-Frame */
-        .a-enter-vr, .a-enter-ar, .a-orientation-modal, .a-loader-title {
+        /* Прячем абсолютно всё, что связано с VR-интерфейсом */
+        .a-enter-vr, .a-enter-ar, .a-enter-vr-button, .a-enter-ar-button, .a-canvas-container + div {
             display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
         }
+        
 
         /* Стили для слайдера зума внизу */
         #zoom-slider {
@@ -32,6 +36,7 @@
             border-radius: 50%;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        
         }
     </style>
 </head>
@@ -105,3 +110,4 @@
     </script>
 </body>
 </html>
+
