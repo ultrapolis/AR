@@ -57,10 +57,12 @@
     mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
     embedded 
     color-space="sRGB" 
-    renderer="colorManagement: true, exposure: 2.0;" 
+    renderer="colorManagement: true, exposure: 2.0, alpha: true;" 
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: true"
-    style="width: 100vw; height: 100vh;">
+    canvas-loader  style="width: 100vw; height: 100vh;">
+
+       
         
         <a-assets>
             <video id="v1" src="./tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -116,5 +118,6 @@
     </script>
 </body>
 </html>
+
 
 
