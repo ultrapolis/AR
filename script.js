@@ -1,4 +1,4 @@
-// Динамический импорт в начале файла
+// САМАЯ ПЕРВАЯ СТРОКА ФАЙЛА
 import { LumaSplatsThree } from '@lumaai/luma-web';
 
 // ==========================================
@@ -7,19 +7,18 @@ import { LumaSplatsThree } from '@lumaai/luma-web';
 AFRAME.registerComponent('luma-model', {
     schema: { url: { type: 'string' } },
     init: function () {
-        // Создаем модель без лишних настроек для теста
         const splat = new LumaSplatsThree({
             source: this.data.url,
             enableFastInits: true
         });
 
-        // Прикрепляем к A-Frame
+        // Просто добавляем модель в сцену без обрезки (для теста)
         this.el.setObject3D('mesh', splat);
     }
 });
 
 // ==========================================
-// БЛОК 1: Переменные
+// БЛОК 1: Переменные (твой код...)
 // ==========================================
 const btn = document.querySelector('#btn');
 const status = document.querySelector('#status');
@@ -29,7 +28,7 @@ const video360 = document.querySelector('#v360');
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
-const lumaSplat = document.querySelector('#luma-splat');
+const lumaSplat = document.querySelector('#luma-splat'); // Убедись, что ID совпадает с HTML
 const closeBtn = document.querySelector('#close-btn');
 
 const skyPortal = document.querySelector('#sky-portal');
@@ -39,6 +38,8 @@ const uiBottom = document.querySelector('#ui-bottom-360');
 const playPauseBtn = document.querySelector('#play-pause-360');
 const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
+
+// ... ДАЛЕЕ ВЕСЬ ОСТАЛЬНОЙ ТВОЙ КОД (Блоки 2-8) ...
 
 // ==========================================
 // БЛОК 2: Запуск системы
@@ -222,6 +223,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
