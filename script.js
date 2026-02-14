@@ -116,15 +116,18 @@ closeBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// БЛОК 4: Поиск портала (Таргет 3)
+// БЛОК 4: Поиск портала
 // ==========================================
 document.querySelector('#target3').addEventListener("targetFound", () => {
+    // Показываем кнопку только если мы НЕ в режиме 360
     if (skyPortal.getAttribute('visible') === false) {
         status.innerHTML = "Маркер портала найден";
         enter360Btn.style.display = 'block';
     }
 });
+
 document.querySelector('#target3').addEventListener("targetLost", () => {
+    // Скрываем кнопку входа всегда, когда маркер потерян
     enter360Btn.style.display = 'none';
 });
 
@@ -134,39 +137,30 @@ document.querySelector('#target3').addEventListener("targetLost", () => {
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
-    uiBottom.style.display = 'block'; // Показываем всю нижнюю панель
+    uiBottom.style.display = 'block';
     playPauseBtn.innerHTML = "PAUSE";
     
+    // Активация гироскопа
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
-            if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
-        });
+            if (state === 'granted') {
+                cameraEl.setAttribute('look-controls', 'enabled: true');
+            }
+        }).catch(err => console.error(err));
     } else {
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
     skyPortal.setAttribute('visible', 'true');
     video360.currentTime = 0;
-    setTimeout(() => { video360.play(); }, 150);
+    // Даем небольшую паузу перед воспроизведением
+    setTimeout(() => { video360.play(); }, 200);
+    
     status.style.display = 'none'; 
 });
 
-playPauseBtn.addEventListener('click', () => {
-    if (video360.paused) {
-        video360.play();
-        playPauseBtn.innerHTML = "PAUSE";
-    } else {
-        video360.pause();
-        playPauseBtn.innerHTML = "PLAY";
-    }
-});
-
-zoomSlider.addEventListener('input', (e) => {
-    cameraEl.setAttribute('camera', 'fov', e.target.value);
-});
-
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (принудительный фикс масштаба)
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (Безопасный сброс)
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
@@ -175,41 +169,34 @@ exit360Btn.addEventListener('click', () => {
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
     
-    // 1. Отключаем гироскоп и сбрасываем камеру
+    // Выключаем гироскоп, но НЕ удаляем камеру
     cameraEl.setAttribute('look-controls', 'enabled: false');
+    
+    // Сброс вращения через внутренние объекты A-Frame
     if(cameraEl.components['look-controls']) {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
-
-    // 2. Полный сброс параметров камеры
-    cameraEl.removeAttribute('camera');
-    cameraEl.setAttribute('camera', 'active: true; fov: 80; near: 0.1; far: 10000;');
     cameraEl.setAttribute('rotation', '0 0 0');
+
+    // ФИКС МАСШТАБА: Вместо удаления камеры, принудительно ставим FOV
+    // и вызываем обновление проекции
+    cameraEl.setAttribute('camera', 'fov', 80);
     zoomSlider.value = 100;
 
     status.style.display = 'block';
-    status.innerHTML = "Синхронизация масштаба...";
+    status.innerHTML = "Синхронизация AR...";
 
-    // 3. ПРИНУДИТЕЛЬНЫЙ ПЕРЕСЧЕТ МАТРИЦЫ (секретный фикс)
     setTimeout(() => {
-        // Заставляем MindAR подумать, что размер экрана изменился
-        // Это заставит его пересчитать масштаб проекции 3D объектов
-        if (sceneEl.systems['mindar-image-system']) {
-             // Эмитируем событие изменения размера для обновления движка
-             window.dispatchEvent(new Event('resize'));
-        }
+        // Принудительно заставляем систему пересчитать размеры
+        window.dispatchEvent(new Event('resize'));
         
-        if (sceneEl.renderer) {
-            sceneEl.renderer.clear();
-        }
-
         status.innerHTML = "Наведите на маркеры";
         if(video1) {
             video1.pause();
             video1.currentTime = 0;
         }
-    }, 600);
+    }, 300);
 });
 
 // ==========================================
@@ -232,6 +219,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
