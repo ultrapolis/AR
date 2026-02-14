@@ -7,43 +7,36 @@ body, html {
     overflow: hidden; 
     background: #000; 
     touch-action: none; 
-    /* Фикс для iOS: предотвращает лишние сдвиги при прокрутке */
-    position: fixed; 
+    position: fixed; /* Фикс для мобильных */
 }
 
-/* Сцена должна занимать всё пространство под кнопками */
-a-scene { 
-    width: 100vw; 
-    height: 100vh; 
-}
-
-/* ФИКС КАМЕРЫ: заставляем видеопоток от MindAR быть на весь экран */
+/* Видеопоток камеры — уводим на самый задний план */
 video {
     width: 100vw !important;
     height: 100vh !important;
-    object-fit: cover !important; /* Обрезает края, но заполняет весь экран без полос */
+    object-fit: cover !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2 !important; /* Самый нижний слой */
+}
+
+/* Холст A-Frame — должен быть прозрачным и над видео */
+.a-canvas {
+    z-index: 1 !important;
     position: absolute;
     top: 0;
     left: 0;
 }
 
-#btn { 
-    display: none; 
-    position: fixed; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    z-index: 10005; /* Поднимаем выше всего */
-    padding: 20px 40px; 
-    background: #28a745; 
-    color: #fff; 
-    border: none; 
-    border-radius: 12px; 
-    font-weight: bold; 
-    font-size: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+/* Сцена */
+a-scene { 
+    width: 100vw; 
+    height: 100vh;
+    z-index: 0;
 }
 
+/* СТАТУС (над всем) */
 #status {
     position: fixed; 
     top: 0; 
@@ -59,6 +52,25 @@ video {
     background: rgba(0, 0, 0, 0.6);
 }
 
+/* КНОПКА START (над всем) */
+#btn { 
+    display: none; 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    z-index: 10005; 
+    padding: 20px 40px; 
+    background: #28a745; 
+    color: #fff; 
+    border: none; 
+    border-radius: 12px; 
+    font-weight: bold; 
+    font-size: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* КНОПКА ЗАКРЫТЬ */
 #close-btn {
     display: none; 
     position: fixed; 
@@ -76,7 +88,12 @@ video {
     font-size: 24px;
 }
 
-/* Полностью скрываем встроенные элементы MindAR */
+/* Стили для портала 360 (если нужны дополнительные) */
+#enter-360, #exit-360, #ui-bottom-360 {
+    z-index: 10008;
+}
+
+/* Скрываем мусор MindAR */
 .mindar-ui-scanning, .mindar-ui-loading, .mindar-ui-overlay { 
     display: none !important; 
 }
