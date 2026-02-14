@@ -1,30 +1,3 @@
-import { LumaSplatsThree } from '@lumaai/luma-web';
-
-// ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA
-// ==========================================
-AFRAME.registerComponent('luma-model', {
-    schema: { url: { type: 'string' } },
-    init: function () {
-        // Создаем "родную" группу A-Frame
-        const container = new AFRAME.THREE.Group();
-
-        // Создаем саму Luma-модель
-        const splat = new LumaSplatsThree({
-            source: this.data.url,
-            enableFastInits: true
-        });
-
-        // Кладем Luma в контейнер
-        container.add(splat);
-
-        // Передаем A-Frame контейнер (он его примет без ошибок)
-        this.el.setObject3D('mesh', container);
-        
-        // Масштабируем контейнер, если нужно
-        container.scale.set(1, 1, 1);
-    }
-});
 
 // ==========================================
 // БЛОК 1: Переменные (твой код...)
@@ -223,9 +196,11 @@ let initialDist = 0, initialScale = 1;
 
 // Универсальная функция для поиска активной модели
 function getActiveModel() {
-    if (status.innerHTML.includes("модель 1")) return model1;
-    if (status.innerHTML.includes("модель 2")) return freeModel;
-    if (status.innerHTML.includes("Luma")) return lumaSplat;
+    const text = status.innerHTML;
+    if (text.includes("модель 1")) return model1;
+    if (text.includes("модель 2")) return freeModel;
+    // Добавили проверку для Венеры (нового сплэт-файла)
+    if (text.includes("Luma") || text.includes("Venus") || text.includes("Венера")) return lumaSplat;
     return null;
 }
 
@@ -238,7 +213,10 @@ window.addEventListener('touchstart', (e) => {
         isDragging = false;
         initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
         let active = getActiveModel();
-        if (active) initialScale = active.getAttribute('scale').x;
+        if (active) {
+            const currentScale = active.getAttribute('scale');
+            initialScale = (typeof currentScale === 'object') ? currentScale.x : 1;
+        }
     }
 });
 
@@ -249,7 +227,7 @@ window.addEventListener('touchmove', (e) => {
     if (!active) return;
 
     if (e.touches.length === 1 && isDragging) {
-        let rot = active.getAttribute('rotation');
+        let rot = active.getAttribute('rotation') || {x: 0, y: 0, z: 0};
         active.setAttribute('rotation', {
             x: rot.x + (e.touches[0].clientY - prevY) * 0.5,
             y: rot.y + (e.touches[0].clientX - prevX) * 0.8,
@@ -259,24 +237,17 @@ window.addEventListener('touchmove', (e) => {
         prevY = e.touches[0].clientY;
     } else if (e.touches.length === 2) {
         let currentDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
-        let newScale = initialScale * (currentDist / initialDist);
-        newScale = Math.min(Math.max(newScale, 0.1), 5);
+        let zoomFactor = currentDist / initialDist;
+        let newScale = initialScale * zoomFactor;
+        
+        // Ограничиваем зум
+        newScale = Math.min(Math.max(newScale, 0.05), 10);
         active.setAttribute('scale', { x: newScale, y: newScale, z: newScale });
     }
 });
 
-// Чистильщик VR
-setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Чистильщик лишнего интерфейса
+setInterval(() => { 
+    const uiElements = document.querySelectorAll('.a-enter-vr, .a-enter-ar, .a-orientation-modal');
+    uiElements.forEach(el => el.remove());
+}, 1000);
