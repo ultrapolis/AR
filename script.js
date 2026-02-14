@@ -14,87 +14,37 @@ const closeBtn = document.querySelector('#close-btn');
 const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
-const uiBottom = document.querySelector('#ui-bottom-360');
 const playPauseBtn = document.querySelector('#play-pause-360');
 const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Безопасный запуск системы
+// БЛОК 2: Загрузка ресурсов
 // ==========================================
 const assets = document.querySelector('a-assets');
 
-// Показываем загрузку
 assets.addEventListener('progress', (e) => {
-    const progress = e.detail.progress;
-    if (typeof progress === 'number' && progress >= 0) {
-        status.innerHTML = `Загрузка контента: ${Math.floor(progress * 100)}%`;
-    }
+    const percent = Math.floor(e.detail.progress * 100);
+    status.innerHTML = `Контент загружается: ${percent}%`;
 });
 
-// Кнопка Старт
-const activateStart = () => {
-    if (btn.style.display !== 'block') {
-        status.innerHTML = "Готово. Нажмите START";
-        btn.style.display = 'block';
-    }
-};
-
-assets.addEventListener('loaded', activateStart);
-setTimeout(activateStart, 4000); // Даем 4 секунды на кэш
+assets.addEventListener('loaded', () => {
+    status.innerHTML = "Почти готово... Нажмите START";
+    btn.style.display = 'block';
+});
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
-    status.innerHTML = "Настройка разрешений...";
-
-    // 1. Сначала активируем датчики для iOS
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(state => {
-                console.log("Датчики наклона: " + state);
-                proceedToAR(); // Идем дальше после клика
-            })
-            .catch(err => {
-                console.log("Датчики отклонены, пробуем запустить AR...");
-                proceedToAR();
-            });
-    } else {
-        proceedToAR();
-    }
-});
-
-// Отдельная функция для запуска движка после всех разрешений
-function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
-    
-    // Будим видео
-    if(video1) video1.play().then(() => video1.pause()).catch(e => {});
-    if(video360) video360.play().then(() => video360.pause()).catch(e => {});
-
-    // Даем браузеру 300мс "продохнуть" перед запуском тяжелого AR-движка
-    setTimeout(() => {
-        try {
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            if (arSystem) {
-                arSystem.start();
-                console.log("MindAR успешно вызван");
-            } else {
-                status.innerHTML = "Система AR не найдена. Обновите страницу.";
-            }
-        } catch (e) {
-            status.innerHTML = "Ошибка: " + e.message;
-            console.error(e);
-        }
-    }, 300);
-}
+    video1.play().then(() => { video1.pause(); });
+    video360.play().then(() => { video360.pause(); });
+    sceneEl.systems['mindar-image-system'].start();
+});
 
 sceneEl.addEventListener("arReady", () => { 
     status.innerHTML = "Наведите на маркеры"; 
 });
 
-sceneEl.addEventListener("arError", (event) => {
-    status.innerHTML = "Камера заблокирована. Проверьте настройки.";
-});
 // ==========================================
 // БЛОК 3: Таргеты 0, 1, 2
 // ==========================================
@@ -103,12 +53,15 @@ document.querySelector('#target0').addEventListener("targetFound", () => {
     status.innerHTML = "Видео активно"; 
 });
 document.querySelector('#target0').addEventListener("targetLost", () => { video1.pause(); });
+
 document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "модель 1"; });
+
 document.querySelector('#target2').addEventListener("targetFound", () => { 
     status.innerHTML = "модель 2"; 
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
 });
+
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
@@ -133,9 +86,11 @@ document.querySelector('#target3').addEventListener("targetLost", () => {
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
-    uiBottom.style.display = 'block'; // Показываем всю нижнюю панель
+    playPauseBtn.style.display = 'block';
+    zoomSlider.style.display = 'block';
     playPauseBtn.innerHTML = "PAUSE";
     
+    // Датчики
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
             if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
@@ -169,7 +124,8 @@ zoomSlider.addEventListener('input', (e) => {
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
-    uiBottom.style.display = 'none';
+    playPauseBtn.style.display = 'none';
+    zoomSlider.style.display = 'none';
     
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
@@ -206,6 +162,3 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
-
-
-
