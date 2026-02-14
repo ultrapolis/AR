@@ -53,13 +53,14 @@
     <button id="close-btn" style="display:none; position:fixed; top:20px; right:20px; z-index:10005; padding:15px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:50%; width:50px; height:50px;">✕</button>
 
     <a-scene 
-        id="scene"
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
-        embedded 
-        color-space="sRGB" 
-        renderer="colorManagement: true, exposure: 2.0;" 
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: true">
+    id="scene"
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
+    embedded 
+    color-space="sRGB" 
+    renderer="colorManagement: true, exposure: 2.0;" 
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true"
+    style="width: 100vw; height: 100vh;">
         
         <a-assets>
             <video id="v1" src="./tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -115,4 +116,5 @@
     </script>
 </body>
 </html>
+
 
