@@ -42,9 +42,17 @@ const cameraEl = document.querySelector('#cam');
 // ... ДАЛЕЕ ВЕСЬ ОСТАЛЬНОЙ ТВОЙ КОД (Блоки 2-8) ...
 
 // ==========================================
-// БЛОК 2: Запуск системы
+// БЛОК 2: Безопасный запуск системы (Полная версия)
 // ==========================================
 const assets = document.querySelector('a-assets');
+
+// Восстанавливаем отображение прогресса (помогает понять, что загрузка идет)
+assets.addEventListener('progress', (e) => {
+    const progress = e.detail.progress;
+    if (typeof progress === 'number' && progress >= 0) {
+        status.innerHTML = `Загрузка контента: ${Math.floor(progress * 100)}%`;
+    }
+});
 
 const activateStart = () => {
     if (btn.style.display !== 'block') {
@@ -53,17 +61,25 @@ const activateStart = () => {
     }
 };
 
+// Событие загрузки + страховочный таймер (на случай тяжелых Luma-моделей)
 assets.addEventListener('loaded', activateStart);
-setTimeout(activateStart, 4000);
+setTimeout(activateStart, 4000); 
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
     status.innerHTML = "Настройка разрешений...";
 
+    // Активация датчиков (iOS)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
-            .then(state => { proceedToAR(); })
-            .catch(err => { proceedToAR(); });
+            .then(state => { 
+                console.log("Датчики: " + state);
+                proceedToAR(); 
+            })
+            .catch(err => { 
+                console.warn("Датчики отклонены:", err);
+                proceedToAR(); 
+            });
     } else {
         proceedToAR();
     }
@@ -71,25 +87,39 @@ btn.addEventListener('click', () => {
 
 function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
-    video1.play().then(() => video1.pause()).catch(e => {});
-    video360.play().then(() => video360.pause()).catch(e => {});
+    
+    // ВАЖНО: Разблокируем видео (без этого они могут не стартовать на таргет)
+    if(video1) video1.play().then(() => video1.pause()).catch(e => {});
+    if(video360) video360.play().then(() => video360.pause()).catch(e => {});
 
     setTimeout(() => {
         try {
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (arSystem) {
+                // ФИКС: Отключаем встроенный UI библиотеки, чтобы он не перекрывал наш
                 arSystem.ui.showLoading = () => {};
                 arSystem.ui.showScanning = () => {};
                 arSystem.ui.hideScanning = () => {};
+                
                 arSystem.start();
+                console.log("MindAR запущен");
+            } else {
+                status.innerHTML = "Ошибка: Система MindAR не найдена";
             }
         } catch (e) {
-            status.innerHTML = "Ошибка: " + e.message;
+            status.innerHTML = "Ошибка запуска: " + e.message;
+            console.error(e);
         }
     }, 300);
 }
 
-sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на маркеры"; });
+sceneEl.addEventListener("arReady", () => { 
+    status.innerHTML = "Наведите на маркеры"; 
+});
+
+sceneEl.addEventListener("arError", (event) => {
+    status.innerHTML = "Ошибка камеры. Проверьте разрешения.";
+});
 
 // ==========================================
 // БЛОК 3-4: Таргеты
@@ -223,6 +253,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
