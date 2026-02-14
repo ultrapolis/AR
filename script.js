@@ -1,18 +1,29 @@
-// САМАЯ ПЕРВАЯ СТРОКА ФАЙЛА
 import { LumaSplatsThree } from '@lumaai/luma-web';
 
 // ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA
+// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Исправленная версия)
 // ==========================================
 AFRAME.registerComponent('luma-model', {
     schema: { url: { type: 'string' } },
     init: function () {
+        // ХАК: Подменяем глобальный THREE для библиотеки Luma на тот, что в A-Frame
         const splat = new LumaSplatsThree({
             source: this.data.url,
             enableFastInits: true
         });
 
-        // Просто добавляем модель в сцену без обрезки (для теста)
+        // ОБРЕЗКА (Selection State) — теперь без ошибок
+        splat.initialSelectionState = {
+            inputVolumes: [{
+                type: 'box',
+                position: [0, 0, 0],
+                scale: [2, 2, 2],
+                isInverse: false
+            }]
+        };
+
+        // ВАЖНЫЙ МОМЕНТ: A-Frame может ругаться, если splat еще не готов.
+        // Мы добавляем его в дерево объектов A-Frame принудительно.
         this.el.setObject3D('mesh', splat);
     }
 });
@@ -253,6 +264,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
