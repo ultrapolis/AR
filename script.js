@@ -7,18 +7,14 @@ import { LumaSplatsThree } from '@lumaai/luma-web';
 AFRAME.registerComponent('luma-model', {
     schema: { url: { type: 'string' } },
     init: function () {
+        // Создаем модель без лишних настроек для теста
         const splat = new LumaSplatsThree({
             source: this.data.url,
             enableFastInits: true
         });
 
-        // Просто прикрепляем модель к сущности A-Frame
+        // Прикрепляем к A-Frame
         this.el.setObject3D('mesh', splat);
-        
-        // Отключаем ошибку Multiple instances, говоря Luma использовать Three из A-Frame
-        splat.onLoad = () => {
-            console.log("Luma модель загружена!");
-        };
     }
 });
 
@@ -226,6 +222,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
