@@ -1,4 +1,5 @@
-import { LumaSplatsThree } from '@lumaai/luma-web';
+// Динамически загружаем библиотеку Luma
+const { LumaSplatsThree } = await import('@lumaai/luma-web');
 
 // ==========================================
 // РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA
@@ -10,12 +11,14 @@ AFRAME.registerComponent('luma-model', {
             source: this.data.url,
             enableFastInits: true
         });
-        // Программная обрезка фона (куб вокруг модели)
+        
+        // Устанавливаем обрезку (Bounding Box)
         splat.setFilter({
             type: 'box',
-            min: [-1, -1, -1],
-            max: [1, 1, 1]
+            min: [-2, -2, -2],
+            max: [2, 2, 2]
         });
+
         this.el.setObject3D('mesh', splat);
     }
 });
@@ -224,3 +227,4 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
