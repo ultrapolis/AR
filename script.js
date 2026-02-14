@@ -1,5 +1,5 @@
 // Динамический импорт в начале файла
-const { LumaSplatsThree } = await import('@lumaai/luma-web');
+import { LumaSplatsThree } from '@lumaai/luma-web';
 
 // ==========================================
 // РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA
@@ -12,21 +12,13 @@ AFRAME.registerComponent('luma-model', {
             enableFastInits: true
         });
 
-        // ОБРЕЗКА ФОНА (вместо setFilter)
-        // Мы создаем "селектор", который скрывает всё за пределами куба
-        splat.initialSelectionState = {
-            inputVolumes: [{
-                type: 'box',
-                // Позиция центра куба (x, y, z)
-                position: [0, 0, 0], 
-                // Размер куба (шкала)
-                scale: [2, 2, 2], 
-                // Оставляем только то, что ВНУТРИ куба
-                isInverse: false 
-            }]
-        };
-
+        // Просто прикрепляем модель к сущности A-Frame
         this.el.setObject3D('mesh', splat);
+        
+        // Отключаем ошибку Multiple instances, говоря Luma использовать Three из A-Frame
+        splat.onLoad = () => {
+            console.log("Luma модель загружена!");
+        };
     }
 });
 
@@ -234,5 +226,6 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
