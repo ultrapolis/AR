@@ -48,31 +48,36 @@ const playPauseBtn = document.querySelector('#play-pause-360');
 const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
-// ... ДАЛЕЕ ВЕСЬ ОСТАЛЬНОЙ ТВОЙ КОД (Блоки 2-8) ...
-
 // ==========================================
 // БЛОК 2: Безопасный запуск системы (Полная версия)
 // ==========================================
 const assets = document.querySelector('a-assets');
 
-// Восстанавливаем отображение прогресса (помогает понять, что загрузка идет)
+// Восстанавливаем отображение прогресса
 assets.addEventListener('progress', (e) => {
     const progress = e.detail.progress;
     if (typeof progress === 'number' && progress >= 0) {
-        status.innerHTML = `Загрузка контента: ${Math.floor(progress * 100)}%`;
+        // Показываем проценты только пока кнопка START еще не появилась
+        if (btn.style.display !== 'block') {
+            status.innerHTML = `Загрузка контента: ${Math.floor(progress * 100)}%`;
+        }
     }
 });
 
 const activateStart = () => {
     if (btn.style.display !== 'block') {
+        console.log("Активация кнопки START");
         status.innerHTML = "Готово. Нажмите START";
         btn.style.display = 'block';
     }
 };
 
-// Событие загрузки + страховочный таймер (на случай тяжелых Luma-моделей)
+// 1. Ждем штатной загрузки ассетов
 assets.addEventListener('loaded', activateStart);
-setTimeout(activateStart, 1000); 
+
+// 2. СИЛОВОЙ МЕТОД: Если через 2 секунды кнопка не появилась (ассеты зависли), 
+// показываем её принудительно, чтобы проект не висел вечно
+setTimeout(activateStart, 2000); 
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
@@ -97,21 +102,21 @@ btn.addEventListener('click', () => {
 function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
     
-    // ВАЖНО: Разблокируем видео (без этого они могут не стартовать на таргет)
-    if(video1) video1.play().then(() => video1.pause()).catch(e => {});
-    if(video360) video360.play().then(() => video360.pause()).catch(e => {});
+    // ВАЖНО: Разблокируем видео (звук/автоплей) через клик пользователя
+    if(video1) video1.play().then(() => video1.pause()).catch(e => { console.log("v1 wait click"); });
+    if(video360) video360.play().then(() => video360.pause()).catch(e => { console.log("v360 wait click"); });
 
     setTimeout(() => {
         try {
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (arSystem) {
-                // ФИКС: Отключаем встроенный UI библиотеки, чтобы он не перекрывал наш
+                // ФИКС: Отключаем встроенный UI библиотеки
                 arSystem.ui.showLoading = () => {};
                 arSystem.ui.showScanning = () => {};
                 arSystem.ui.hideScanning = () => {};
                 
                 arSystem.start();
-                console.log("MindAR запущен");
+                console.log("MindAR успешно запущен");
             } else {
                 status.innerHTML = "Ошибка: Система MindAR не найдена";
             }
@@ -262,6 +267,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
