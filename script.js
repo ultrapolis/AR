@@ -1,4 +1,4 @@
-// Динамически загружаем библиотеку Luma
+// Динамический импорт в начале файла
 const { LumaSplatsThree } = await import('@lumaai/luma-web');
 
 // ==========================================
@@ -11,13 +11,20 @@ AFRAME.registerComponent('luma-model', {
             source: this.data.url,
             enableFastInits: true
         });
-        
-        // Устанавливаем обрезку (Bounding Box)
-        splat.setFilter({
-            type: 'box',
-            min: [-2, -2, -2],
-            max: [2, 2, 2]
-        });
+
+        // ОБРЕЗКА ФОНА (вместо setFilter)
+        // Мы создаем "селектор", который скрывает всё за пределами куба
+        splat.initialSelectionState = {
+            inputVolumes: [{
+                type: 'box',
+                // Позиция центра куба (x, y, z)
+                position: [0, 0, 0], 
+                // Размер куба (шкала)
+                scale: [2, 2, 2], 
+                // Оставляем только то, что ВНУТРИ куба
+                isInverse: false 
+            }]
+        };
 
         this.el.setObject3D('mesh', splat);
     }
@@ -227,4 +234,5 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
