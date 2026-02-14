@@ -9,13 +9,19 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Прячем абсолютно всё, что связано с VR-интерфейсом */
-        .a-enter-vr, .a-enter-ar, .a-enter-vr-button, .a-enter-ar-button, .a-canvas-container + div {
+        /* Полная блокировка интерфейса VR/AR от A-Frame */
+        .a-enter-vr, .a-enter-ar, .a-enter-vr-button, .a-enter-ar-button, 
+        [vr-mode-ui], .a-canvas-container + div {
             display: none !important;
             opacity: 0 !important;
-            visibility: hidden !important;
+            width: 0 !important;
+            height: 0 !important;
+            max-width: 0 !important;
+            max-height: 0 !important;
+            position: absolute !important;
+            top: -9999px !important; /* Уносим за пределы видимости */
             pointer-events: none !important;
-        }
+        }}
         
 
         /* Стили для слайдера зума внизу */
@@ -85,7 +91,7 @@
         
         <a-entity id="target2" mindar-image-target="targetIndex: 2">
             <a-entity id="world-container" visible="false">
-                <a-gltf-model id="free-model" src="#myModel2" scale="0.8 0.8 0.8" position="0 1 0"></a-gltf-model>
+                <a-gltf-model id="free-model" src="#myModel2" scale="0.8 0.8 0.8" position="0 -1 0"></a-gltf-model>
             </a-entity>
         </a-entity>
 
@@ -110,5 +116,6 @@
     </script>
 </body>
 </html>
+
 
 
