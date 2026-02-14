@@ -244,9 +244,49 @@ window.addEventListener('touchmove', (e) => {
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
 
+// ==========================================
+// БЛОК 8: Масштабирование (Зум) моделей пальцами
+// ==========================================
+let initialDist = 0;
+let initialScale = 1;
 
+window.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        // Запоминаем начальное расстояние между пальцами
+        initialDist = Math.hypot(
+            e.touches[0].pageX - e.touches[1].pageX,
+            e.touches[0].pageY - e.touches[1].pageY
+        );
+        
+        // Определяем, какую модель сейчас зумим
+        let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
+        if (active) {
+            initialScale = active.getAttribute('scale').x;
+        }
+    }
+});
 
+window.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+        let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
+        
+        if (active) {
+            let currentDist = Math.hypot(
+                e.touches[0].pageX - e.touches[1].pageX,
+                e.touches[0].pageY - e.touches[1].pageY
+            );
+            
+            // Коэффициент изменения (чувствительность)
+            let zoomFactor = currentDist / initialDist;
+            let newScale = initialScale * zoomFactor;
 
+            // Ограничиваем зум, чтобы модель не исчезла или не стала на весь экран
+            newScale = Math.min(Math.max(newScale, 0.2), 5); 
+
+            active.setAttribute('scale', { x: newScale, y: newScale, z: newScale });
+        }
+    }
+});
 
 
 
