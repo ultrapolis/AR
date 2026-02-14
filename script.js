@@ -1,18 +1,21 @@
 import { LumaSplatsThree } from '@lumaai/luma-web';
 
 // ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Исправленная версия)
+// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Финальный фикс)
 // ==========================================
 AFRAME.registerComponent('luma-model', {
     schema: { url: { type: 'string' } },
     init: function () {
-        // ХАК: Подменяем глобальный THREE для библиотеки Luma на тот, что в A-Frame
+        // 1. Создаем "родной" контейнер A-Frame
+        const container = new AFRAME.THREE.Group();
+
+        // 2. Создаем модель Luma
         const splat = new LumaSplatsThree({
             source: this.data.url,
             enableFastInits: true
         });
 
-        // ОБРЕЗКА (Selection State) — теперь без ошибок
+        // 3. Обрезка фона (SelectionState)
         splat.initialSelectionState = {
             inputVolumes: [{
                 type: 'box',
@@ -22,9 +25,11 @@ AFRAME.registerComponent('luma-model', {
             }]
         };
 
-        // ВАЖНЫЙ МОМЕНТ: A-Frame может ругаться, если splat еще не готов.
-        // Мы добавляем его в дерево объектов A-Frame принудительно.
-        this.el.setObject3D('mesh', splat);
+        // 4. Кладем Luma внутрь нашего родного контейнера
+        container.add(splat);
+
+        // 5. Отдаем A-Frame именно контейнер. Теперь он НЕ будет ругаться!
+        this.el.setObject3D('mesh', container);
     }
 });
 
@@ -264,6 +269,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
