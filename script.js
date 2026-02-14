@@ -20,7 +20,7 @@ const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Безопасный запуск системы
+// БЛОК 2: Безопасный запуск системы (Исправленный)
 // ==========================================
 const assets = document.querySelector('a-assets');
 
@@ -52,7 +52,7 @@ btn.addEventListener('click', () => {
         DeviceOrientationEvent.requestPermission()
             .then(state => {
                 console.log("Датчики наклона: " + state);
-                proceedToAR(); // Идем дальше после клика
+                proceedToAR(); 
             })
             .catch(err => {
                 console.log("Датчики отклонены, пробуем запустить AR...");
@@ -67,15 +67,21 @@ btn.addEventListener('click', () => {
 function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
     
-    // Будим видео
+    // Будим видео (разблокировка звука/автоплея)
     if(video1) video1.play().then(() => video1.pause()).catch(e => {});
     if(video360) video360.play().then(() => video360.pause()).catch(e => {});
 
-    // Даем браузеру 300мс "продохнуть" перед запуском тяжелого AR-движка
+    // Даем браузеру 300мс "продохнуть"
     setTimeout(() => {
         try {
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (arSystem) {
+                // ФИКС ОШИБКИ ui.showLoading:
+                // Принудительно отключаем внутренний UI библиотеки перед стартом
+                arSystem.ui.showLoading = () => {};
+                arSystem.ui.showScanning = () => {};
+                arSystem.ui.hideScanning = () => {};
+                
                 arSystem.start();
                 console.log("MindAR успешно вызван");
             } else {
@@ -237,6 +243,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
