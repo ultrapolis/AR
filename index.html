@@ -20,38 +20,25 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Полная блокировка интерфейса VR/AR от A-Frame */
         .a-enter-vr, .a-enter-ar, .a-enter-vr-button, .a-enter-ar-button, 
         [vr-mode-ui], .a-canvas-container + div {
             display: none !important;
             opacity: 0 !important;
-            width: 0 !important;
-            height: 0 !important;
-            max-width: 0 !important;
-            max-height: 0 !important;
             position: absolute !important;
             top: -9999px !important; 
             pointer-events: none !important;
         }
 
-        /* Стили для слайдера зума внизу */
         #zoom-slider {
             -webkit-appearance: none;
-            width: 80%;
-            max-width: 400px;
-            height: 8px;
+            width: 80%; height: 8px;
             background: rgba(255, 255, 255, 0.4);
-            border-radius: 5px;
-            outline: none;
+            border-radius: 5px; outline: none;
         }
         #zoom-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 25px;
-            height: 25px;
-            background: #00cfd5;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            width: 25px; height: 25px;
+            background: #00cfd5; border-radius: 50%;
         }
     </style>
 </head>
@@ -133,6 +120,7 @@
     </script>
 </body>
 </html>
+
 
 
 
