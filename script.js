@@ -72,7 +72,7 @@ const activateStart = () => {
 
 // Событие загрузки + страховочный таймер (на случай тяжелых Luma-моделей)
 assets.addEventListener('loaded', activateStart);
-setTimeout(activateStart, 4000); 
+setTimeout(activateStart, 1000); 
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
@@ -262,6 +262,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
