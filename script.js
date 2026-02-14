@@ -132,7 +132,7 @@ document.querySelector('#target3').addEventListener("targetLost", () => {
 });
 
 // ==========================================
-// БЛОК 5: ВХОД В ПОРТАЛ
+// БЛОК 5: ВХОД В ПОРТАЛ И УПРАВЛЕНИЕ
 // ==========================================
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
@@ -140,7 +140,7 @@ enter360Btn.addEventListener('click', () => {
     uiBottom.style.display = 'block';
     playPauseBtn.innerHTML = "PAUSE";
     
-    // Активация гироскопа
+    // Активация гироскопа (для iOS)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
             if (state === 'granted') {
@@ -153,14 +153,37 @@ enter360Btn.addEventListener('click', () => {
 
     skyPortal.setAttribute('visible', 'true');
     video360.currentTime = 0;
-    // Даем небольшую паузу перед воспроизведением
+    
+    // Небольшая задержка перед стартом видео
     setTimeout(() => { video360.play(); }, 200);
     
     status.style.display = 'none'; 
 });
 
+// ОБРАБОТКА ПАУЗЫ (внутри Блока 5)
+playPauseBtn.addEventListener('click', () => {
+    if (video360.paused) {
+        video360.play();
+        playPauseBtn.innerHTML = "PAUSE";
+    } else {
+        video360.pause();
+        playPauseBtn.innerHTML = "PLAY";
+    }
+});
+
+// ОБРАБОТКА ЗУМА (Тот самый "силовой" метод)
+zoomSlider.addEventListener('input', (e) => {
+    const fovValue = parseFloat(e.target.value);
+    // 1. Обновляем данные компонента напрямую
+    if (cameraEl.components.camera) {
+        cameraEl.components.camera.data.fov = fovValue;
+        // 2. И принудительно обновляем атрибут
+        cameraEl.setAttribute('camera', 'fov', fovValue);
+    }
+});
+
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (Безопасный сброс)
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
@@ -169,28 +192,23 @@ exit360Btn.addEventListener('click', () => {
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
     
-    // Выключаем гироскоп, но НЕ удаляем камеру
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
-    // Сброс вращения через внутренние объекты A-Frame
     if(cameraEl.components['look-controls']) {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
     cameraEl.setAttribute('rotation', '0 0 0');
 
-    // ФИКС МАСШТАБА: Вместо удаления камеры, принудительно ставим FOV
-    // и вызываем обновление проекции
-    cameraEl.setAttribute('camera', 'fov', 80);
-    zoomSlider.value = 100;
+    // СБРОС ЗУМА: возвращаем стандартное значение 80
+    zoomSlider.value = 100; // на ползунке это 100
+    cameraEl.setAttribute('camera', 'fov', 80); 
 
     status.style.display = 'block';
     status.innerHTML = "Синхронизация AR...";
 
     setTimeout(() => {
-        // Принудительно заставляем систему пересчитать размеры
         window.dispatchEvent(new Event('resize'));
-        
         status.innerHTML = "Наведите на маркеры";
         if(video1) {
             video1.pause();
@@ -219,6 +237,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
