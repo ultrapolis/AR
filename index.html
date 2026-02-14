@@ -11,13 +11,13 @@
     <script type="importmap">
     {
         "imports": {
-            "@lumaai/luma-web": "https://unpkg.com/@lumaai/luma-web@0.2.0/dist/library/luma-web.module.js"
+            "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+            "@lumaai/luma-web": "https://cdn.jsdelivr.net/npm/@lumaai/luma-web@0.2.0/+esm"
         }
     }
     </script>
 
     <script>
-      // Заставляем систему модулей думать, что THREE уже загружен (берем его из A-Frame)
       window.THREE = AFRAME.THREE;
     </script>
 
@@ -124,6 +124,7 @@
     </script>
 </body>
 </html>
+
 
 
 
