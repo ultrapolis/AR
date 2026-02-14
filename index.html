@@ -7,14 +7,17 @@
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <link rel="stylesheet" href="style.css">
+    
     <style>
-        /* Прячем кнопку VR режима */
-        .a-enter-vr { display: none !important; }
-        
+        /* Прячем кнопку VR и системные окна A-Frame */
+        .a-enter-vr, .a-enter-ar, .a-orientation-modal, .a-loader-title {
+            display: none !important;
+        }
+
         /* Стили для слайдера зума внизу */
         #zoom-slider {
             -webkit-appearance: none;
-            width: 80%; /* Слайдер почти на всю ширину */
+            width: 80%;
             max-width: 400px;
             height: 8px;
             background: rgba(255, 255, 255, 0.4);
@@ -51,8 +54,9 @@
 
     <a-scene 
         id="scene"
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;"
-        embedded color-space="sRGB" 
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
+        embedded 
+        color-space="sRGB" 
         renderer="colorManagement: true, exposure: 2.0;" 
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: true">
@@ -64,7 +68,7 @@
             <a-asset-item id="myModel2" src="./model2_new.glb"></a-asset-item>
         </a-assets>
 
-        <a-camera id="cam" position="0 0 0" look-controls="enabled: false" fov="100"></a-camera>
+        <a-camera id="cam" position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
             <a-video src="#v1" width="1" height="1" position="0 0 0.1"></a-video>
@@ -88,6 +92,16 @@
     </a-scene>
 
     <script src="script.js"></script>
+
+    <script>
+        window.addEventListener('load', () => {
+            const cleanUI = () => {
+                const buttons = document.querySelectorAll('.a-enter-vr, .a-enter-ar, .a-orientation-modal');
+                buttons.forEach(b => b.remove());
+            };
+            setTimeout(cleanUI, 1000);
+            setTimeout(cleanUI, 3000); // Повтор для надежности
+        });
+    </script>
 </body>
 </html>
-
