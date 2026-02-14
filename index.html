@@ -6,7 +6,9 @@
     <title>AR Book Project</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    
     <script src="https://quadjr.github.io/aframe-gaussian-splatting/index.js"></script>
+
     <link rel="stylesheet" href="style.css">
     
     <style>
@@ -14,21 +16,28 @@
         [vr-mode-ui], .a-canvas-container + div {
             display: none !important;
             opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
             position: absolute !important;
-            top: -9999px !important; 
+            top: -9999px !important;
             pointer-events: none !important;
         }
 
         #zoom-slider {
             -webkit-appearance: none;
-            width: 80%; max-width: 400px; height: 8px;
+            width: 80%;
+            max-width: 400px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.4);
-            border-radius: 5px; outline: none;
+            border-radius: 5px;
+            outline: none;
         }
         #zoom-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 25px; height: 25px;
-            background: #00cfd5; border-radius: 50%;
+            background: #00cfd5;
+            border-radius: 50%;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -54,7 +63,7 @@
         mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
         embedded 
         color-space="sRGB" 
-        renderer="colorManagement: true, exposure: 2.0, alpha: true;" 
+        renderer="colorManagement: true, exposure: 2.0;" 
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: true">
         
@@ -89,8 +98,7 @@
             <a-entity id="venus-model" 
                 gaussian_splatting="src: ./venus.splat;" 
                 scale="1 1 1" 
-                position="0 0 0"
-                rotation="0 0 0">
+                position="0 0 0.2">
             </a-entity>
         </a-entity>
 
