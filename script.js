@@ -131,11 +131,14 @@ document.querySelector('#target3').addEventListener("targetFound", () => {
 document.querySelector('#target3').addEventListener("targetLost", () => { enter360Btn.style.display = 'none'; });
 
 // ТАРГЕТ 4 (Luma)
-document.querySelector('#target4').addEventListener("targetFound", () => { status.innerHTML = "Luma Splat"; });
+document.querySelector('#target4').addEventListener("targetFound", () => {
+    status.innerHTML = "Venus Splat"; // Текст для функции getActiveModel
+    const splat = document.querySelector('#luma-splat');
+    if (splat) splat.setAttribute('visible', 'true');
+});
 
-closeBtn.addEventListener('click', () => {
-    worldContainer.setAttribute('visible', 'false');
-    closeBtn.style.display = 'none';
+document.querySelector('#target4').addEventListener("targetLost", () => {
+    status.innerHTML = "Наведите на маркеры";
 });
 
 // ==========================================
@@ -251,3 +254,4 @@ setInterval(() => {
     const uiElements = document.querySelectorAll('.a-enter-vr, .a-enter-ar, .a-orientation-modal');
     uiElements.forEach(el => el.remove());
 }, 1000);
+
