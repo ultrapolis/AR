@@ -166,7 +166,7 @@ zoomSlider.addEventListener('input', (e) => {
 });
 
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (фикс масштаба и перезапуск)
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (принудительный фикс масштаба)
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
@@ -175,38 +175,41 @@ exit360Btn.addEventListener('click', () => {
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
     
-    // 1. Отключаем гироскоп и сбрасываем углы
+    // 1. Отключаем гироскоп и сбрасываем камеру
     cameraEl.setAttribute('look-controls', 'enabled: false');
     if(cameraEl.components['look-controls']) {
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
 
-    // 2. ПЕРЕЗАПУСК КАМЕРЫ (это чинит уменьшенный масштаб)
-    // Мы полностью удаляем и возвращаем компонент камеры
+    // 2. Полный сброс параметров камеры
     cameraEl.removeAttribute('camera');
-    cameraEl.setAttribute('camera', 'fov', 80); 
+    cameraEl.setAttribute('camera', 'active: true; fov: 80; near: 0.1; far: 10000;');
     cameraEl.setAttribute('rotation', '0 0 0');
     zoomSlider.value = 100;
-    
-    // 3. ВСТРЯСКА ДВИЖКА (Renderer Clear)
-    // Это заставляет MindAR понять, что видеосферы больше нет
-    if (sceneEl.renderer) {
-        sceneEl.renderer.clear();
-    }
 
     status.style.display = 'block';
-    status.innerHTML = "Синхронизация AR...";
+    status.innerHTML = "Синхронизация масштаба...";
 
+    // 3. ПРИНУДИТЕЛЬНЫЙ ПЕРЕСЧЕТ МАТРИЦЫ (секретный фикс)
     setTimeout(() => {
+        // Заставляем MindAR подумать, что размер экрана изменился
+        // Это заставит его пересчитать масштаб проекции 3D объектов
+        if (sceneEl.systems['mindar-image-system']) {
+             // Эмитируем событие изменения размера для обновления движка
+             window.dispatchEvent(new Event('resize'));
+        }
+        
+        if (sceneEl.renderer) {
+            sceneEl.renderer.clear();
+        }
+
         status.innerHTML = "Наведите на маркеры";
         if(video1) {
             video1.pause();
             video1.currentTime = 0;
         }
-        // Принудительно обновляем матрицу мира, чтобы объекты "прилипли" к маркерам
-        sceneEl.object3D.updateMatrixWorld(true);
-    }, 500);
+    }, 600);
 });
 
 // ==========================================
@@ -229,6 +232,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
