@@ -166,42 +166,35 @@ zoomSlider.addEventListener('input', (e) => {
 });
 
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (с перезапуском AR)
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (фикс масштаба и сброс)
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
     uiBottom.style.display = 'none';
     
-    // 1. Скрываем портал и гасим видео
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
-    video360.currentTime = 0;
     
-    // 2. Выключаем гироскоп
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
-    // 3. СБРОС КАМЕРЫ (очень важно для возврата к маркерам)
     if(cameraEl.components['look-controls']) {
-        // Обнуляем углы поворота
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
-    // Принудительно ставим камеру в ноль, чтобы она "увидела" маркеры перед собой
+    
+    // СБРОС КАМЕРЫ ДЛЯ ФИКСА МАСШТАБА
+    // Вместо просто изменения fov, мы полностью сбрасываем компонент камеры
+    cameraEl.removeAttribute('camera');
+    cameraEl.setAttribute('camera', 'fov', 80); // Возвращаем стандартный AR угол
     cameraEl.setAttribute('rotation', '0 0 0');
-    cameraEl.setAttribute('camera', 'fov', 100);
+    
     zoomSlider.value = 100;
     
-    // 4. ПЕРЕЗАПУСК ДВИЖКА
-    // Мы на секунду "встряхнем" систему, чтобы она снова начала искать маркеры
     status.style.display = 'block';
     status.innerHTML = "Возврат в AR...";
 
     setTimeout(() => {
-        // Команда на перерисовку сцены
-        sceneEl.renderer.clear(); 
         status.innerHTML = "Наведите на маркеры";
-        
-        // Если видео 1 играет за кадром (звук есть, а картинки нет) — стопаем его
         if(video1) {
             video1.pause();
             video1.currentTime = 0;
@@ -229,4 +222,5 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
