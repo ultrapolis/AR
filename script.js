@@ -75,27 +75,27 @@ btn.addEventListener('click', () => {
 function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
     
-    // ВАЖНО: Разблокируем видео (звук/автоплей) через клик пользователя
-    if(video1) video1.play().then(() => video1.pause()).catch(e => { console.log("v1 wait click"); });
-    if(video360) video360.play().then(() => video360.pause()).catch(e => { console.log("v360 wait click"); });
+    if(video1) video1.play().then(() => video1.pause()).catch(e => {});
+    if(video360) video360.play().then(() => video360.pause()).catch(e => {});
 
     setTimeout(() => {
         try {
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (arSystem) {
-                // ФИКС: Отключаем встроенный UI библиотеки
                 arSystem.ui.showLoading = () => {};
                 arSystem.ui.showScanning = () => {};
                 arSystem.ui.hideScanning = () => {};
                 
                 arSystem.start();
-                console.log("MindAR успешно запущен");
-            } else {
-                status.innerHTML = "Ошибка: Система MindAR не найдена";
+                
+                // СИЛОВОЙ ФИКС РАЗМЕРА:
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 500); // Даем полсекунды камере открыться и "пинаем" её ресайзом
+                
             }
         } catch (e) {
             status.innerHTML = "Ошибка запуска: " + e.message;
-            console.error(e);
         }
     }, 300);
 }
@@ -254,4 +254,5 @@ setInterval(() => {
     const uiElements = document.querySelectorAll('.a-enter-vr, .a-enter-ar, .a-orientation-modal');
     uiElements.forEach(el => el.remove());
 }, 1000);
+
 
