@@ -1,21 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AR Book Project</title>
 
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-            "@lumaai/luma-web": "https://esm.sh/@lumaai/luma-web@0.2.0?external=three"
-        }
-    }
-    </script>
+    
+    <script src="https://quadjr.github.io/aframe-gaussian-splatting/index.js"></script>
 
     <link rel="stylesheet" href="style.css">
     
@@ -97,16 +90,17 @@
 
         <a-entity id="target4" mindar-image-target="targetIndex: 4">
             <a-entity id="luma-splat" 
-                luma-model="url: https://lumalabs.ai/capture/d80d4876-cf71-4b8a-8b5b-49ffac44cd4a" 
-                scale="0.5 0.5 0.5" 
-                position="0 0 0">
+                gaussian_splatting="src: ./venus.splat;" 
+                scale="1 1 1" 
+                position="0 0 0"
+                rotation="0 0 0">
             </a-entity>
         </a-entity>
 
         <a-videosphere id="sky-portal" src="#v360" visible="false" rotation="0 -90 0" radius="100"></a-videosphere>
     </a-scene>
 
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 
     <script>
         window.addEventListener('load', () => {
@@ -120,16 +114,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
