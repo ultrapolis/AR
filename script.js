@@ -1,28 +1,28 @@
 import { LumaSplatsThree } from '@lumaai/luma-web';
 
 // ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Метод "Матрешка")
+// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA
 // ==========================================
 AFRAME.registerComponent('luma-model', {
     schema: { url: { type: 'string' } },
     init: function () {
-        // Создаем пустой контейнер, который A-Frame ТОЧНО признает своим
+        // Создаем "родную" группу A-Frame
         const container = new AFRAME.THREE.Group();
 
-        // Создаем модель Luma
+        // Создаем саму Luma-модель
         const splat = new LumaSplatsThree({
             source: this.data.url,
             enableFastInits: true
         });
 
-        // Кладем Luma внутрь контейнера
+        // Кладем Luma в контейнер
         container.add(splat);
 
-        // Отдаем A-Frame контейнер. Ошибка setObject3D исчезнет!
+        // Передаем A-Frame контейнер (он его примет без ошибок)
         this.el.setObject3D('mesh', container);
         
-        // Сохраняем ссылку, чтобы потом можно было крутить/зумить
-        this.splat = splat;
+        // Масштабируем контейнер, если нужно
+        container.scale.set(1, 1, 1);
     }
 });
 
@@ -262,6 +262,7 @@ window.addEventListener('touchmove', (e) => {
 
 // Чистильщик VR
 setInterval(() => { const vrBtn = document.querySelector('.a-enter-vr'); if (vrBtn) vrBtn.remove(); }, 1000);
+
 
 
 
