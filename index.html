@@ -6,9 +6,8 @@
     <title>AR Book Project</title>
     
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/gaussian-splats-3d@0.3.3/dist/gaussian-splats-3d.umd.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://quadjr.github.io/aframe-gaussian-splatting/index.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -28,11 +27,11 @@
     <button id="close-btn" style="display:none; position:fixed; top:20px; right:20px; z-index:10005; padding:15px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:50%; width:50px; height:50px;">✕</button>
 
     <a-scene 
-        id="scene"
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
-        embedded 
-        renderer="colorManagement: true; antialias: true; alpha: true;" 
-        vr-mode-ui="enabled: false">
+    id="scene"
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+    embedded 
+    renderer="colorManagement: true; sortObjects: true; antialias: false;" 
+    vr-mode-ui="enabled: false">
         
         <a-assets>
             <video id="v1" src="tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -62,15 +61,14 @@
         </a-entity>
 
         <a-entity id="target4" mindar-image-target="targetIndex: 4">
-    <a-sphere radius="0.05" color="red" position="0 0 0"></a-sphere>
-
-    <a-entity id="venus-model" 
-        splat-loader="src: venus.splat?v=1" 
-        scale="15 15 15" 
-        position="0 0 0"
-        rotation="0 0 0">
-    </a-entity>
-</a-entity>
+            <a-sphere radius="0.05" color="red" position="0 0 0"></a-sphere>
+        
+            <a-entity id="venus-model" 
+                gaussian_splatting="src: venus.splat; cutOff: 0.05;" 
+                scale="1.5 1.5 1.5" 
+                position="0 0 0">
+            </a-entity>
+        </a-entity>
 
         <a-videosphere id="sky-portal" src="#v360" visible="false" rotation="0 -90 0" radius="100"></a-videosphere>
     </a-scene>
@@ -78,6 +76,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
