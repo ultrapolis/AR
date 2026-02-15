@@ -9,6 +9,7 @@ const video360 = document.querySelector('#v360');
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
+const venusModel = document.querySelector('#venus-model'); // ДОБАВЛЕНО: Венера
 const closeBtn = document.querySelector('#close-btn');
 
 const skyPortal = document.querySelector('#sky-portal');
@@ -78,6 +79,8 @@ function proceedToAR() {
             if (arSystem) {
                 arSystem.start();
                 console.log("MindAR успешно вызван");
+                // ДОБАВЛЕНО: фикс ресайза для мобильных
+                window.dispatchEvent(new Event('resize'));
             } else {
                 status.innerHTML = "Система AR не найдена. Обновите страницу.";
             }
@@ -97,7 +100,7 @@ sceneEl.addEventListener("arError", (event) => {
 });
 
 // ==========================================
-// БЛОК 3: Таргеты 0, 1, 2
+// БЛОК 3: Таргеты 0, 1, 2, 4
 // ==========================================
 document.querySelector('#target0').addEventListener("targetFound", () => { 
     video1.play(); 
@@ -110,6 +113,9 @@ document.querySelector('#target2').addEventListener("targetFound", () => {
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
 });
+// ДОБАВЛЕНО: Статус для Венеры
+document.querySelector('#target4').addEventListener("targetFound", () => { status.innerHTML = "Venus"; });
+
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
     closeBtn.style.display = 'none';
@@ -192,7 +198,6 @@ exit360Btn.addEventListener('click', () => {
     zoomSlider.value = 100;
     
     // 4. ПЕРЕЗАПУСК ДВИЖКА
-    // Мы на секунду "встряхнем" систему, чтобы она снова начала искать маркеры
     status.style.display = 'block';
     status.innerHTML = "Возврат в AR...";
 
@@ -201,16 +206,16 @@ exit360Btn.addEventListener('click', () => {
         sceneEl.renderer.clear(); 
         status.innerHTML = "Наведите на маркеры";
         
-        // Если видео 1 играет за кадром (звук есть, а картинки нет) — стопаем его
         if(video1) {
             video1.pause();
             video1.currentTime = 0;
         }
+        window.dispatchEvent(new Event('resize'));
     }, 500);
 });
 
 // ==========================================
-// БЛОК 7: Вращение
+// БЛОК 7: Вращение (ОБНОВЛЕНО для Венеры)
 // ==========================================
 let isDragging = false;
 let prevX = 0; let prevY = 0;
@@ -218,7 +223,10 @@ window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touc
 window.addEventListener('touchend', () => isDragging = false);
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
+    // Находим активную модель, включая Венеру
+    let active = status.innerHTML.includes("модель 1") ? model1 : 
+                 (status.innerHTML.includes("модель 2") ? freeModel : 
+                 (status.innerHTML.includes("Venus") ? venusModel : null));
     if (active) {
         let rot = active.getAttribute('rotation');
         active.setAttribute('rotation', { 
