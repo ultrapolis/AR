@@ -101,8 +101,14 @@
     </a-scene>
 
     <script src="script.js"></script>
+    <script>
+  sceneEl.addEventListener('render-target-loaded', () => {
+    sceneEl.renderer.setPixelRatio(window.devicePixelRatio);
+  });
+</script>
 </body>
 </html>
+
 
 
 
