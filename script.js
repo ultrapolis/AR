@@ -1,3 +1,17 @@
+// Регистрация компонента Luma для A-Frame
+AFRAME.registerComponent('luma-splat', {
+    schema: {
+        src: { type: 'string' }
+    },
+    init: function () {
+        const splat = new LumaSplatsThree({
+            source: this.data.src,
+            enableFastInits: true
+        });
+        this.el.setObject3D('mesh', splat);
+    }
+});
+
 // ==========================================
 // БЛОК 1: Переменные
 // ==========================================
@@ -237,3 +251,4 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
