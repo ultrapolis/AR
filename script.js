@@ -7,38 +7,43 @@ AFRAME.registerComponent('splat-loader', {
         const el = this.el;
         const data = this.data;
 
-        const startSplat = () => {
-            if (typeof GaussianSplats3D === 'undefined') {
-                console.log("Ждем загрузку библиотеки сплэтов...");
-                setTimeout(startSplat, 500); // Пробуем еще раз через полсекунды
-                return;
-            }
+        const tryInit = () => {
+            // Проверяем, появилась ли библиотека в глобальном окне
+            if (typeof GaussianSplats3D !== 'undefined') {
+                console.log("Библиотека сплэтов найдена. Начинаем загрузку...");
+                
+                const renderer = el.sceneEl.renderer;
+                const camera = el.sceneEl.camera;
 
-            try {
-                const viewer = new GaussianSplats3D.Viewer({
-                    'selfContained': false,
-                    'useBuiltInControls': false,
-                    'rootElement': el.sceneEl.canvas.parentElement,
-                    'renderer': el.sceneEl.renderer,
-                    'camera': el.sceneEl.camera,
-                    'antialiasing': true
-                });
+                try {
+                    const viewer = new GaussianSplats3D.Viewer({
+                        'selfContained': false,
+                        'useBuiltInControls': false,
+                        'rootElement': el.sceneEl.canvas.parentElement,
+                        'renderer': renderer,
+                        'camera': camera,
+                        'antialiasing': true
+                    });
 
-                viewer.addSplatScene(data.src, {
-                    'progressiveLoad': true,
-                    'showLoadingUI': false
-                }).then(() => {
-                    console.log("Венера загружена!");
-                    el.setObject3D('mesh', viewer.getSplatMesh());
-                });
-            } catch (e) {
-                console.error("Ошибка Splat:", e);
+                    viewer.addSplatScene(data.src, {
+                        'progressiveLoad': true,
+                        'showLoadingUI': false
+                    }).then(() => {
+                        console.log("Венера успешно добавлена в сцену!");
+                        el.setObject3D('mesh', viewer.getSplatMesh());
+                    });
+                } catch (err) {
+                    console.error("Критическая ошибка инициализации сплэта:", err);
+                }
+            } else {
+                // Если библиотеки еще нет — ждем 100мс и пробуем снова
+                setTimeout(tryInit, 100);
             }
         };
 
-        // Запускаем инициализацию после загрузки сцены
-        if (el.sceneEl.renderStarted) { startSplat(); } 
-        else { el.sceneEl.addEventListener('render-started', startSplat); }
+        // Начинаем попытки после того, как сцена загрузилась
+        if (el.sceneEl.renderStarted) { tryInit(); } 
+        else { el.sceneEl.addEventListener('render-started', tryInit); }
     }
 });
 
@@ -242,6 +247,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
