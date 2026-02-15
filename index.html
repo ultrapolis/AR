@@ -56,9 +56,10 @@
     id="scene"
     mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
     embedded color-space="sRGB" 
-    renderer="colorManagement: true, exposure: 2.0;" 
+    renderer="antialias: true; colorManagement: true, exposure: 2.0; precision: highp;" 
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: true">
+       
         
         <a-assets>
             <video id="v1" src="./tree.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -89,7 +90,7 @@
 
         <a-entity id="target4" mindar-image-target="targetIndex: 4">
     <a-entity id="venus-model" 
-        gaussian_splatting="src: ./venus.splat;" 
+        gaussian_splatting="src: ./venus.splat; cutoff: 0.1;"
         scale="0.5 0.5 0.5" 
         position="0 0 -1"
         rotation="0 0 0">
@@ -102,5 +103,6 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
