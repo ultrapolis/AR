@@ -1,10 +1,31 @@
-<a-entity id="target4" mindar-image-target="targetIndex: 4">
-    <a-entity id="venus-model" 
-        splat-loader="src: ./venus.splat" 
-        scale="2 2 2" 
-        position="0 0 0">
-    </a-entity>
-</a-entity
+// ==========================================
+// РЕГИСТРАЦИЯ КОМПОНЕНТА SPLAT (Движок SuperSplat)
+// ==========================================
+AFRAME.registerComponent('splat-loader', {
+    schema: { src: { type: 'string' } },
+    init: function () {
+        const renderer = this.el.sceneEl.renderer;
+        const camera = this.el.sceneEl.camera;
+
+        // Настройка вьювера
+        const viewer = new GaussianSplats3D.Viewer({
+            'selfContained': false,
+            'useBuiltInControls': false,
+            'rootElement': this.el.sceneEl.canvas.parentElement,
+            'renderer': renderer,
+            'camera': camera,
+            'antialiasing': true
+        });
+
+        viewer.addSplatScene(this.data.src, {
+            'progressiveLoad': true,
+            'showLoadingUI': false
+        }).then(() => {
+            console.log("Венера загружена успешно");
+            this.el.setObject3D('mesh', viewer.getSplatMesh());
+        }).catch(err => console.error("Ошибка загрузки сплата:", err));
+    }
+});
 
 // ==========================================
 // БЛОК 1: Переменные (твой код)
@@ -250,6 +271,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
