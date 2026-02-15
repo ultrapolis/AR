@@ -1,6 +1,3 @@
-// ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА SPLAT (Безопасная)
-// ==========================================
 AFRAME.registerComponent('splat-loader', {
     schema: { src: { type: 'string' } },
     init: function () {
@@ -8,10 +5,7 @@ AFRAME.registerComponent('splat-loader', {
         const data = this.data;
 
         const tryInit = () => {
-            // Проверяем наличие библиотеки в глобальном поле window
             if (typeof GaussianSplats3D !== 'undefined') {
-                console.log("Библиотека сплэтов найдена. Начинаем загрузку...");
-                
                 const renderer = el.sceneEl.renderer;
                 const camera = el.sceneEl.camera;
 
@@ -22,26 +16,22 @@ AFRAME.registerComponent('splat-loader', {
                         'rootElement': el.sceneEl.canvas.parentElement,
                         'renderer': renderer,
                         'camera': camera,
-                        'antialiasing': true
+                        'antialiasing': true,
+                        'integerPrecision': true // Помогает на некоторых телефонах
                     });
 
                     viewer.addSplatScene(data.src, {
-                        'progressiveLoad': true,
+                        'progressiveLoad': false, // Грузим сразу целиком для надежности
                         'showLoadingUI': false
                     }).then(() => {
-                        console.log("Венера успешно добавлена в сцену!");
-                        el.setObject3D('mesh', viewer.getSplatMesh());
+                        const mesh = viewer.getSplatMesh();
+                        el.setObject3D('mesh', mesh);
+                        console.log("Венера в сцене");
                     });
-                } catch (err) {
-                    console.error("Критическая ошибка инициализации сплэта:", err);
-                }
-            } else {
-                // Если библиотеки еще нет — ждем 200мс и пробуем снова
-                setTimeout(tryInit, 200);
-            }
+                } catch (err) { console.error("Ошибка:", err); }
+            } else { setTimeout(tryInit, 200); }
         };
 
-        // Запуск после того, как сцена начала рендеринг
         if (el.sceneEl.renderStarted) { tryInit(); } 
         else { el.sceneEl.addEventListener('render-started', tryInit); }
     }
@@ -245,3 +235,4 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
