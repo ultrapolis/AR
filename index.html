@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AR Book Project</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/mkkellogg/GaussianSplats3D@v0.3.3/dist/gaussian-splats-3d.umd.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gaussian-splats-3d@0.3.3/dist/gaussian-splats-3d.umd.cjs"></script>
 
 
     <link rel="stylesheet" href="style.css">
@@ -60,11 +60,11 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: true"> -->
 
-       <a-scene 
+      <a-scene 
     id="scene"
-    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
-    embedded 
-    renderer="antialias: true; colorManagement: true; logarithmicDepthBuffer: true; precision: highp;" 
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+    embedded color-space="sRGB" 
+    renderer="colorManagement: true, exposure: 2.0;" 
     vr-mode-ui="enabled: false">
        
         
@@ -114,6 +114,7 @@
 </script>
 </body>
 </html>
+
 
 
 
