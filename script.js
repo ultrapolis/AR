@@ -1,40 +1,49 @@
 // ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Безопасная версия)
+// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Финальная версия)
 // ==========================================
 AFRAME.registerComponent('luma-splat', {
     schema: {
         src: { type: 'string' }
     },
     init: function () {
-        const el = this.el;
-        const data = this.data;
+        // Проверяем, загрузилась ли библиотека Luma из HTML
+        if (typeof LumaSplatsThree === 'undefined') {
+            console.error("Библиотека Luma не найдена! Проверьте ссылку в index.html");
+            return;
+        }
 
-        // Ждем, пока сцена и библиотека будут готовы
-        const initModel = () => {
-            try {
-                // В этой библиотеке класс называется LumaSplatsThree
-                const splat = new LumaSplatsThree({
-                    source: data.src,
-                    enableFastInits: true,
-                    loadingAnimationEnabled: false // Отключаем лишние анимации для скорости
-                });
+        try {
+            const splat = new LumaSplatsThree({
+                source: this.data.src,
+                enableFastInits: true,
+                loadingAnimationEnabled: false
+            });
 
-                // Важно: Luma возвращает Object3D, кладем его в сущность A-Frame
-                el.setObject3D('mesh', splat);
-                console.log("Luma-модель инициализирована:", data.src);
-            } catch (e) {
-                console.error("Ошибка инициализации Luma Splat:", e);
-            }
-        };
-
-        if (typeof LumaSplatsThree !== 'undefined') {
-            initModel();
-        } else {
-            // Если библиотека еще не скачалась, ждем секунду
-            window.addEventListener('load', initModel);
+            // Добавляем модель в объект A-Frame
+            this.el.setObject3D('mesh', splat);
+            
+            // Чтобы модель не была черной, если нет света
+            splat.material.emissiveIntensity = 1.0; 
+            
+            console.log("Венера успешно загружена из:", this.data.src);
+        } catch (e) {
+            console.error("Ошибка при создании сплэта:", e);
         }
     }
 });
+
+// Фикс ошибки setPixelRatio (переписан безопасно)
+document.querySelector('a-scene').addEventListener('render-target-loaded', () => {
+    const scene = document.querySelector('a-scene');
+    if (scene && scene.renderer) {
+        scene.renderer.setPixelRatio(window.devicePixelRatio);
+    }
+});
+
+// ==========================================
+// БЛОК 1: Переменные (твой код)
+// ==========================================
+// ... дальше идет твой стандартный код ...
 
 // ==========================================
 // БЛОК 1: Переменные
@@ -275,5 +284,6 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
