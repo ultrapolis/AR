@@ -1,36 +1,46 @@
 // ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА SPLAT (Движок SuperSplat)
+// РЕГИСТРАЦИЯ КОМПОНЕНТА SPLAT (Безопасная)
 // ==========================================
 AFRAME.registerComponent('splat-loader', {
     schema: { src: { type: 'string' } },
     init: function () {
-        const renderer = this.el.sceneEl.renderer;
-        const camera = this.el.sceneEl.camera;
+        const el = this.el;
+        const data = this.data;
 
-        // Настройка вьювера
-        const viewer = new GaussianSplats3D.Viewer({
-            'selfContained': false,
-            'useBuiltInControls': false,
-            'rootElement': this.el.sceneEl.canvas.parentElement,
-            'renderer': renderer,
-            'camera': camera,
-            'antialiasing': true
-        });
+        const startSplat = () => {
+            if (typeof GaussianSplats3D === 'undefined') {
+                console.log("Ждем загрузку библиотеки сплэтов...");
+                setTimeout(startSplat, 500); // Пробуем еще раз через полсекунды
+                return;
+            }
 
-        viewer.addSplatScene(this.data.src, {
-            'progressiveLoad': true,
-            'showLoadingUI': false
-        }).then(() => {
-            console.log("Венера загружена успешно");
-            this.el.setObject3D('mesh', viewer.getSplatMesh());
-        }).catch(err => console.error("Ошибка загрузки сплата:", err));
+            try {
+                const viewer = new GaussianSplats3D.Viewer({
+                    'selfContained': false,
+                    'useBuiltInControls': false,
+                    'rootElement': el.sceneEl.canvas.parentElement,
+                    'renderer': el.sceneEl.renderer,
+                    'camera': el.sceneEl.camera,
+                    'antialiasing': true
+                });
+
+                viewer.addSplatScene(data.src, {
+                    'progressiveLoad': true,
+                    'showLoadingUI': false
+                }).then(() => {
+                    console.log("Венера загружена!");
+                    el.setObject3D('mesh', viewer.getSplatMesh());
+                });
+            } catch (e) {
+                console.error("Ошибка Splat:", e);
+            }
+        };
+
+        // Запускаем инициализацию после загрузки сцены
+        if (el.sceneEl.renderStarted) { startSplat(); } 
+        else { el.sceneEl.addEventListener('render-started', startSplat); }
     }
 });
-
-// ==========================================
-// БЛОК 1: Переменные (твой код)
-// ==========================================
-// ... дальше идет твой стандартный код ...
 
 // ==========================================
 // БЛОК 1: Переменные
@@ -43,9 +53,8 @@ const video360 = document.querySelector('#v360');
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
-const venusModel = document.querySelector('#venus-model'); // ДОБАВЛЕНО: Венера
+const venusModel = document.querySelector('#venus-model'); 
 const closeBtn = document.querySelector('#close-btn');
-
 const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
@@ -54,100 +63,65 @@ const playPauseBtn = document.querySelector('#play-pause-360');
 const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
+// БЕЗОПАСНЫЙ ФИКС ПИКСЕЛЕЙ
+window.addEventListener('load', () => {
+    const scene = document.querySelector('a-scene');
+    if (scene) {
+        scene.addEventListener('render-target-loaded', () => {
+            if (scene.renderer) scene.renderer.setPixelRatio(window.devicePixelRatio);
+        });
+    }
+});
+
 // ==========================================
 // БЛОК 2: Безопасный запуск системы
 // ==========================================
 const assets = document.querySelector('a-assets');
 
-// Показываем загрузку
-assets.addEventListener('progress', (e) => {
-    const progress = e.detail.progress;
-    if (typeof progress === 'number' && progress >= 0) {
-        status.innerHTML = `Загрузка контента: ${Math.floor(progress * 100)}%`;
-    }
-});
-
-// Кнопка Старт
 const activateStart = () => {
-    if (btn.style.display !== 'block') {
+    if (btn && btn.style.display !== 'block') {
         status.innerHTML = "Готово. Нажмите START";
         btn.style.display = 'block';
     }
 };
 
-assets.addEventListener('loaded', activateStart);
-setTimeout(activateStart, 4000); // Даем 4 секунды на кэш
+if (assets) {
+    assets.addEventListener('loaded', activateStart);
+    assets.addEventListener('progress', (e) => {
+        status.innerHTML = `Загрузка контента: ${Math.floor(e.detail.progress * 100)}%`;
+    });
+}
+setTimeout(activateStart, 5000);
 
 btn.addEventListener('click', () => {
     btn.style.display = 'none';
     status.innerHTML = "Настройка разрешений...";
-
-    // 1. Сначала активируем датчики для iOS
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(state => {
-                console.log("Датчики наклона: " + state);
-                proceedToAR(); // Идем дальше после клика
-            })
-            .catch(err => {
-                console.log("Датчики отклонены, пробуем запустить AR...");
-                proceedToAR();
-            });
-    } else {
-        proceedToAR();
-    }
+        DeviceOrientationEvent.requestPermission().then(proceedToAR).catch(proceedToAR);
+    } else { proceedToAR(); }
 });
 
-// Отдельная функция для запуска движка после всех разрешений
 function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
+    if(video1) video1.play().then(() => video1.pause()).catch(() => {});
+    if(video360) video360.play().then(() => video360.pause()).catch(() => {});
     
-    // Будим видео
-    if(video1) video1.play().then(() => video1.pause()).catch(e => {});
-    if(video360) video360.play().then(() => video360.pause()).catch(e => {});
-
-    // Даем браузеру 300мс "продохнуть" перед запуском тяжелого AR-движка
     setTimeout(() => {
-        try {
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            if (arSystem) {
-                arSystem.start();
-                console.log("MindAR успешно вызван");
-                // ДОБАВЛЕНО: фикс ресайза для мобильных
-                window.dispatchEvent(new Event('resize'));
-            } else {
-                status.innerHTML = "Система AR не найдена. Обновите страницу.";
-            }
-        } catch (e) {
-            status.innerHTML = "Ошибка: " + e.message;
-            console.error(e);
-        }
+        const arSystem = sceneEl.systems['mindar-image-system'];
+        if (arSystem) arSystem.start();
+        window.dispatchEvent(new Event('resize'));
     }, 300);
 }
 
-sceneEl.addEventListener("arReady", () => { 
-    status.innerHTML = "Наведите на маркеры"; 
-});
+sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на маркеры"; });
 
-sceneEl.addEventListener("arError", (event) => {
-    status.innerHTML = "Камера заблокирована. Проверьте настройки.";
-});
-
-// ==========================================
-// БЛОК 3: Таргеты 0, 1, 2, 4
-// ==========================================
-document.querySelector('#target0').addEventListener("targetFound", () => { 
-    video1.play(); 
-    status.innerHTML = "Видео активно"; 
-});
+// --- БЛОК 3: Таргеты ---
+document.querySelector('#target0').addEventListener("targetFound", () => { video1.play(); status.innerHTML = "Видео активно"; });
 document.querySelector('#target0').addEventListener("targetLost", () => { video1.pause(); });
 document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "модель 1"; });
 document.querySelector('#target2').addEventListener("targetFound", () => { 
-    status.innerHTML = "модель 2"; 
-    worldContainer.setAttribute('visible', 'true');
-    closeBtn.style.display = 'block';
+    status.innerHTML = "модель 2"; worldContainer.setAttribute('visible', 'true'); closeBtn.style.display = 'block';
 });
-// ДОБАВЛЕНО: Статус для Венеры
 document.querySelector('#target4').addEventListener("targetFound", () => { status.innerHTML = "Venus"; });
 
 closeBtn.addEventListener('click', () => {
@@ -248,16 +222,13 @@ exit360Btn.addEventListener('click', () => {
     }, 500);
 });
 
-// ==========================================
-// БЛОК 7: Вращение (ОБНОВЛЕНО для Венеры)
-// ==========================================
+// --- БЛОК 7: Вращение ---
 let isDragging = false;
 let prevX = 0; let prevY = 0;
 window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; });
 window.addEventListener('touchend', () => isDragging = false);
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    // Находим активную модель, включая Венеру
     let active = status.innerHTML.includes("модель 1") ? model1 : 
                  (status.innerHTML.includes("модель 2") ? freeModel : 
                  (status.innerHTML.includes("Venus") ? venusModel : null));
@@ -271,6 +242,9 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
+
+
 
 
 
