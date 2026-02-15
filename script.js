@@ -1,14 +1,38 @@
-// Регистрация компонента Luma для A-Frame
+// ==========================================
+// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Безопасная версия)
+// ==========================================
 AFRAME.registerComponent('luma-splat', {
     schema: {
         src: { type: 'string' }
     },
     init: function () {
-        const splat = new LumaSplatsThree({
-            source: this.data.src,
-            enableFastInits: true
-        });
-        this.el.setObject3D('mesh', splat);
+        const el = this.el;
+        const data = this.data;
+
+        // Ждем, пока сцена и библиотека будут готовы
+        const initModel = () => {
+            try {
+                // В этой библиотеке класс называется LumaSplatsThree
+                const splat = new LumaSplatsThree({
+                    source: data.src,
+                    enableFastInits: true,
+                    loadingAnimationEnabled: false // Отключаем лишние анимации для скорости
+                });
+
+                // Важно: Luma возвращает Object3D, кладем его в сущность A-Frame
+                el.setObject3D('mesh', splat);
+                console.log("Luma-модель инициализирована:", data.src);
+            } catch (e) {
+                console.error("Ошибка инициализации Luma Splat:", e);
+            }
+        };
+
+        if (typeof LumaSplatsThree !== 'undefined') {
+            initModel();
+        } else {
+            // Если библиотека еще не скачалась, ждем секунду
+            window.addEventListener('load', initModel);
+        }
     }
 });
 
@@ -251,4 +275,5 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
