@@ -1,44 +1,10 @@
-// ==========================================
-// РЕГИСТРАЦИЯ КОМПОНЕНТА LUMA (Финальная версия)
-// ==========================================
-AFRAME.registerComponent('luma-splat', {
-    schema: {
-        src: { type: 'string' }
-    },
-    init: function () {
-        // Проверяем, загрузилась ли библиотека Luma из HTML
-        if (typeof LumaSplatsThree === 'undefined') {
-            console.error("Библиотека Luma не найдена! Проверьте ссылку в index.html");
-            return;
-        }
-
-        try {
-            const splat = new LumaSplatsThree({
-                source: this.data.src,
-                enableFastInits: true,
-                loadingAnimationEnabled: false
-            });
-
-            // Добавляем модель в объект A-Frame
-            this.el.setObject3D('mesh', splat);
-            
-            // Чтобы модель не была черной, если нет света
-            splat.material.emissiveIntensity = 1.0; 
-            
-            console.log("Венера успешно загружена из:", this.data.src);
-        } catch (e) {
-            console.error("Ошибка при создании сплэта:", e);
-        }
-    }
-});
-
-// Фикс ошибки setPixelRatio (переписан безопасно)
-document.querySelector('a-scene').addEventListener('render-target-loaded', () => {
-    const scene = document.querySelector('a-scene');
-    if (scene && scene.renderer) {
-        scene.renderer.setPixelRatio(window.devicePixelRatio);
-    }
-});
+<a-entity id="target4" mindar-image-target="targetIndex: 4">
+    <a-entity id="venus-model" 
+        splat-loader="src: ./venus.splat" 
+        scale="2 2 2" 
+        position="0 0 0">
+    </a-entity>
+</a-entity
 
 // ==========================================
 // БЛОК 1: Переменные (твой код)
@@ -284,6 +250,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
