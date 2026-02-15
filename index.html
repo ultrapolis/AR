@@ -7,27 +7,14 @@
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <link rel="stylesheet" href="style.css">
-    
     <style>
-        /* Полная блокировка интерфейса VR/AR от A-Frame */
-        .a-enter-vr, .a-enter-ar, .a-enter-vr-button, .a-enter-ar-button, 
-        [vr-mode-ui], .a-canvas-container + div {
-            display: none !important;
-            opacity: 0 !important;
-            width: 0 !important;
-            height: 0 !important;
-            max-width: 0 !important;
-            max-height: 0 !important;
-            position: absolute !important;
-            top: -9999px !important; /* Уносим за пределы видимости */
-            pointer-events: none !important;
-        }}
+        /* Прячем кнопку VR режима */
+        .a-enter-vr { display: none !important; }
         
-
         /* Стили для слайдера зума внизу */
         #zoom-slider {
             -webkit-appearance: none;
-            width: 80%;
+            width: 80%; /* Слайдер почти на всю ширину */
             max-width: 400px;
             height: 8px;
             background: rgba(255, 255, 255, 0.4);
@@ -42,7 +29,6 @@
             border-radius: 50%;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        
         }
     </style>
 </head>
@@ -65,9 +51,8 @@
 
     <a-scene 
         id="scene"
-        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
-        embedded 
-        color-space="sRGB" 
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+        embedded color-space="sRGB" 
         renderer="colorManagement: true, exposure: 2.0;" 
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: true">
@@ -79,7 +64,7 @@
             <a-asset-item id="myModel2" src="./model2_new.glb"></a-asset-item>
         </a-assets>
 
-        <a-camera id="cam" position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera id="cam" position="0 0 0" look-controls="enabled: false" fov="100"></a-camera>
 
         <a-entity id="target0" mindar-image-target="targetIndex: 0">
             <a-video src="#v1" width="1" height="1" position="0 0 0.1"></a-video>
@@ -91,7 +76,7 @@
         
         <a-entity id="target2" mindar-image-target="targetIndex: 2">
             <a-entity id="world-container" visible="false">
-                <a-gltf-model id="free-model" src="#myModel2" scale="0.8 0.8 0.8" position="0 -1 0"></a-gltf-model>
+                <a-gltf-model id="free-model" src="#myModel2" scale="0.8 0.8 0.8" position="0 0 0"></a-gltf-model>
             </a-entity>
         </a-entity>
 
@@ -103,19 +88,5 @@
     </a-scene>
 
     <script src="script.js"></script>
-
-    <script>
-        window.addEventListener('load', () => {
-            const cleanUI = () => {
-                const buttons = document.querySelectorAll('.a-enter-vr, .a-enter-ar, .a-orientation-modal');
-                buttons.forEach(b => b.remove());
-            };
-            setTimeout(cleanUI, 1000);
-            setTimeout(cleanUI, 3000); // Повтор для надежности
-        });
-    </script>
 </body>
 </html>
-
-
-
