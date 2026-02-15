@@ -1,41 +1,4 @@
-AFRAME.registerComponent('splat-loader', {
-    schema: { src: { type: 'string' } },
-    init: function () {
-        const el = this.el;
-        const data = this.data;
 
-        const tryInit = () => {
-            if (typeof GaussianSplats3D !== 'undefined') {
-                const renderer = el.sceneEl.renderer;
-                const camera = el.sceneEl.camera;
-
-                try {
-                    const viewer = new GaussianSplats3D.Viewer({
-                        'selfContained': false,
-                        'useBuiltInControls': false,
-                        'rootElement': el.sceneEl.canvas.parentElement,
-                        'renderer': renderer,
-                        'camera': camera,
-                        'antialiasing': true,
-                        'integerPrecision': true // Помогает на некоторых телефонах
-                    });
-
-                    viewer.addSplatScene(data.src, {
-                        'progressiveLoad': false, // Грузим сразу целиком для надежности
-                        'showLoadingUI': false
-                    }).then(() => {
-                        const mesh = viewer.getSplatMesh();
-                        el.setObject3D('mesh', mesh);
-                        console.log("Венера в сцене");
-                    });
-                } catch (err) { console.error("Ошибка:", err); }
-            } else { setTimeout(tryInit, 200); }
-        };
-
-        if (el.sceneEl.renderStarted) { tryInit(); } 
-        else { el.sceneEl.addEventListener('render-started', tryInit); }
-    }
-});
 
 // ==========================================
 // БЛОК 1: Переменные
@@ -235,4 +198,5 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
