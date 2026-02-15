@@ -8,7 +8,7 @@ AFRAME.registerComponent('splat-loader', {
         const data = this.data;
 
         const tryInit = () => {
-            // Проверяем, появилась ли библиотека в глобальном окне
+            // Проверяем наличие библиотеки в глобальном поле window
             if (typeof GaussianSplats3D !== 'undefined') {
                 console.log("Библиотека сплэтов найдена. Начинаем загрузку...");
                 
@@ -36,12 +36,12 @@ AFRAME.registerComponent('splat-loader', {
                     console.error("Критическая ошибка инициализации сплэта:", err);
                 }
             } else {
-                // Если библиотеки еще нет — ждем 100мс и пробуем снова
-                setTimeout(tryInit, 100);
+                // Если библиотеки еще нет — ждем 200мс и пробуем снова
+                setTimeout(tryInit, 200);
             }
         };
 
-        // Начинаем попытки после того, как сцена загрузилась
+        // Запуск после того, как сцена начала рендеринг
         if (el.sceneEl.renderStarted) { tryInit(); } 
         else { el.sceneEl.addEventListener('render-started', tryInit); }
     }
@@ -60,6 +60,7 @@ const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
 const venusModel = document.querySelector('#venus-model'); 
 const closeBtn = document.querySelector('#close-btn');
+
 const skyPortal = document.querySelector('#sky-portal');
 const enter360Btn = document.querySelector('#enter-360');
 const exit360Btn = document.querySelector('#exit-360');
@@ -120,7 +121,9 @@ function proceedToAR() {
 
 sceneEl.addEventListener("arReady", () => { status.innerHTML = "Наведите на маркеры"; });
 
-// --- БЛОК 3: Таргеты ---
+// ==========================================
+// БЛОК 3: Таргеты
+// ==========================================
 document.querySelector('#target0').addEventListener("targetFound", () => { video1.play(); status.innerHTML = "Видео активно"; });
 document.querySelector('#target0').addEventListener("targetLost", () => { video1.pause(); });
 document.querySelector('#target1').addEventListener("targetFound", () => { status.innerHTML = "модель 1"; });
@@ -153,7 +156,7 @@ document.querySelector('#target3').addEventListener("targetLost", () => {
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
-    uiBottom.style.display = 'block'; // Показываем всю нижнюю панель
+    uiBottom.style.display = 'block';
     playPauseBtn.innerHTML = "PAUSE";
     
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -191,31 +194,24 @@ exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
     uiBottom.style.display = 'none';
     
-    // 1. Скрываем портал и гасим видео
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
     video360.currentTime = 0;
     
-    // 2. Выключаем гироскоп
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
-    // 3. СБРОС КАМЕРЫ (очень важно для возврата к маркерам)
     if(cameraEl.components['look-controls']) {
-        // Обнуляем углы поворота
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
-    // Принудительно ставим камеру в ноль, чтобы она "увидела" маркеры перед собой
     cameraEl.setAttribute('rotation', '0 0 0');
     cameraEl.setAttribute('camera', 'fov', 100);
     zoomSlider.value = 100;
     
-    // 4. ПЕРЕЗАПУСК ДВИЖКА
     status.style.display = 'block';
     status.innerHTML = "Возврат в AR...";
 
     setTimeout(() => {
-        // Команда на перерисовку сцены
         sceneEl.renderer.clear(); 
         status.innerHTML = "Наведите на маркеры";
         
@@ -227,7 +223,9 @@ exit360Btn.addEventListener('click', () => {
     }, 500);
 });
 
-// --- БЛОК 7: Вращение ---
+// ==========================================
+// БЛОК 7: Вращение
+// ==========================================
 let isDragging = false;
 let prevX = 0; let prevY = 0;
 window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; });
@@ -238,7 +236,7 @@ window.addEventListener('touchmove', (e) => {
                  (status.innerHTML.includes("модель 2") ? freeModel : 
                  (status.innerHTML.includes("Venus") ? venusModel : null));
     if (active) {
-        let rot = active.getAttribute('rotation');
+        let rot = active.getAttribute('rotation') || {x: 0, y: 0, z: 0};
         active.setAttribute('rotation', { 
             x: rot.x + (e.touches[0].clientY - prevY) * 0.5, 
             y: rot.y + (e.touches[0].clientX - prevX) * 0.8, 
@@ -247,12 +245,3 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
-
-
-
-
-
-
-
-
-
