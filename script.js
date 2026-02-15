@@ -9,7 +9,6 @@ const video360 = document.querySelector('#v360');
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
-const venusModel = document.querySelector('#venus-model'); // ДОБАВЛЕНО: Венера
 const closeBtn = document.querySelector('#close-btn');
 
 const skyPortal = document.querySelector('#sky-portal');
@@ -116,10 +115,6 @@ document.querySelector('#target2').addEventListener("targetFound", () => {
     status.innerHTML = "модель 2"; 
     worldContainer.setAttribute('visible', 'true');
     closeBtn.style.display = 'block';
-});
-// ДОБАВЛЕНО: Обработка таргета 4 (Венера)
-document.querySelector('#target4').addEventListener("targetFound", () => { 
-    status.innerHTML = "Venus"; 
 });
 closeBtn.addEventListener('click', () => {
     worldContainer.setAttribute('visible', 'false');
@@ -237,10 +232,7 @@ window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touc
 window.addEventListener('touchend', () => isDragging = false);
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    // ОБНОВЛЕНО: Добавлен поиск Венеры по статусу "Venus"
-    let active = status.innerHTML.includes("модель 1") ? model1 : 
-                 (status.innerHTML.includes("модель 2") ? freeModel : 
-                 (status.innerHTML.includes("Venus") ? venusModel : null));
+    let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
     if (active) {
         let rot = active.getAttribute('rotation');
         active.setAttribute('rotation', { 
@@ -266,10 +258,8 @@ window.addEventListener('touchstart', (e) => {
             e.touches[0].pageY - e.touches[1].pageY
         );
         
-        // ОБНОВЛЕНО: Добавлен поиск Венеры по статусу "Venus"
-        let active = status.innerHTML.includes("модель 1") ? model1 : 
-                     (status.innerHTML.includes("модель 2") ? freeModel : 
-                     (status.innerHTML.includes("Venus") ? venusModel : null));
+        // Определяем, какую модель сейчас зумим
+        let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
         if (active) {
             initialScale = active.getAttribute('scale').x;
         }
@@ -278,10 +268,7 @@ window.addEventListener('touchstart', (e) => {
 
 window.addEventListener('touchmove', (e) => {
     if (e.touches.length === 2) {
-        // ОБНОВЛЕНО: Добавлен поиск Венеры по статусу "Venus"
-        let active = status.innerHTML.includes("модель 1") ? model1 : 
-                     (status.innerHTML.includes("модель 2") ? freeModel : 
-                     (status.innerHTML.includes("Venus") ? venusModel : null));
+        let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
         
         if (active) {
             let currentDist = Math.hypot(
@@ -300,3 +287,6 @@ window.addEventListener('touchmove', (e) => {
         }
     }
 });
+
+
+
