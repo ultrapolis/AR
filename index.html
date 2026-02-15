@@ -62,12 +62,15 @@
         </a-entity>
 
         <a-entity id="target4" mindar-image-target="targetIndex: 4">
-            <a-entity id="venus-model" 
-                splat-loader="src: venus.splat" 
-                scale="1.5 1.5 1.5" 
-                position="0 0 0.2">
-            </a-entity>
-        </a-entity>
+    <a-sphere radius="0.05" color="red" position="0 0 0"></a-sphere>
+
+    <a-entity id="venus-model" 
+        splat-loader="src: venus.splat" 
+        scale="5 5 5" 
+        position="0 0 0"
+        rotation="0 0 0">
+    </a-entity>
+</a-entity>
 
         <a-videosphere id="sky-portal" src="#v360" visible="false" rotation="0 -90 0" radius="100"></a-videosphere>
     </a-scene>
@@ -75,3 +78,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
