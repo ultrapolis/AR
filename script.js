@@ -20,7 +20,7 @@ const zoomSlider = document.querySelector('#zoom-slider');
 const cameraEl = document.querySelector('#cam');
 
 // ==========================================
-// БЛОК 2: Безопасный запуск системы (Исправленный)
+// БЛОК 2: Безопасный запуск системы
 // ==========================================
 const assets = document.querySelector('a-assets');
 
@@ -52,7 +52,7 @@ btn.addEventListener('click', () => {
         DeviceOrientationEvent.requestPermission()
             .then(state => {
                 console.log("Датчики наклона: " + state);
-                proceedToAR(); 
+                proceedToAR(); // Идем дальше после клика
             })
             .catch(err => {
                 console.log("Датчики отклонены, пробуем запустить AR...");
@@ -67,21 +67,15 @@ btn.addEventListener('click', () => {
 function proceedToAR() {
     status.innerHTML = "Запуск камеры...";
     
-    // Будим видео (разблокировка звука/автоплея)
+    // Будим видео
     if(video1) video1.play().then(() => video1.pause()).catch(e => {});
     if(video360) video360.play().then(() => video360.pause()).catch(e => {});
 
-    // Даем браузеру 300мс "продохнуть"
+    // Даем браузеру 300мс "продохнуть" перед запуском тяжелого AR-движка
     setTimeout(() => {
         try {
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (arSystem) {
-                // ФИКС ОШИБКИ ui.showLoading:
-                // Принудительно отключаем внутренний UI библиотеки перед стартом
-                arSystem.ui.showLoading = () => {};
-                arSystem.ui.showScanning = () => {};
-                arSystem.ui.hideScanning = () => {};
-                
                 arSystem.start();
                 console.log("MindAR успешно вызван");
             } else {
@@ -122,51 +116,41 @@ closeBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// БЛОК 4: Поиск портала
+// БЛОК 4: Поиск портала (Таргет 3)
 // ==========================================
 document.querySelector('#target3').addEventListener("targetFound", () => {
-    // Показываем кнопку только если мы НЕ в режиме 360
     if (skyPortal.getAttribute('visible') === false) {
         status.innerHTML = "Маркер портала найден";
         enter360Btn.style.display = 'block';
     }
 });
-
 document.querySelector('#target3').addEventListener("targetLost", () => {
-    // Скрываем кнопку входа всегда, когда маркер потерян
     enter360Btn.style.display = 'none';
 });
 
 // ==========================================
-// БЛОК 5: ВХОД В ПОРТАЛ И УПРАВЛЕНИЕ
+// БЛОК 5: ВХОД В ПОРТАЛ
 // ==========================================
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
-    uiBottom.style.display = 'block';
+    uiBottom.style.display = 'block'; // Показываем всю нижнюю панель
     playPauseBtn.innerHTML = "PAUSE";
     
-    // Активация гироскопа (для iOS)
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
-            if (state === 'granted') {
-                cameraEl.setAttribute('look-controls', 'enabled: true');
-            }
-        }).catch(err => console.error(err));
+            if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
+        });
     } else {
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
     skyPortal.setAttribute('visible', 'true');
     video360.currentTime = 0;
-    
-    // Небольшая задержка перед стартом видео
-    setTimeout(() => { video360.play(); }, 200);
-    
+    setTimeout(() => { video360.play(); }, 150);
     status.style.display = 'none'; 
 });
 
-// ОБРАБОТКА ПАУЗЫ (внутри Блока 5)
 playPauseBtn.addEventListener('click', () => {
     if (video360.paused) {
         video360.play();
@@ -177,50 +161,52 @@ playPauseBtn.addEventListener('click', () => {
     }
 });
 
-// ОБРАБОТКА ЗУМА (Тот самый "силовой" метод)
 zoomSlider.addEventListener('input', (e) => {
-    const fovValue = parseFloat(e.target.value);
-    // 1. Обновляем данные компонента напрямую
-    if (cameraEl.components.camera) {
-        cameraEl.components.camera.data.fov = fovValue;
-        // 2. И принудительно обновляем атрибут
-        cameraEl.setAttribute('camera', 'fov', fovValue);
-    }
+    cameraEl.setAttribute('camera', 'fov', e.target.value);
 });
 
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (с перезапуском AR)
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
     uiBottom.style.display = 'none';
     
+    // 1. Скрываем портал и гасим видео
     skyPortal.setAttribute('visible', 'false');
     video360.pause();
+    video360.currentTime = 0;
     
+    // 2. Выключаем гироскоп
     cameraEl.setAttribute('look-controls', 'enabled: false');
     
+    // 3. СБРОС КАМЕРЫ (очень важно для возврата к маркерам)
     if(cameraEl.components['look-controls']) {
+        // Обнуляем углы поворота
         cameraEl.components['look-controls'].yawObject.rotation.set(0, 0, 0);
         cameraEl.components['look-controls'].pitchObject.rotation.set(0, 0, 0);
     }
+    // Принудительно ставим камеру в ноль, чтобы она "увидела" маркеры перед собой
     cameraEl.setAttribute('rotation', '0 0 0');
-
-    // СБРОС ЗУМА: возвращаем стандартное значение 80
-    zoomSlider.value = 100; // на ползунке это 100
-    cameraEl.setAttribute('camera', 'fov', 80); 
-
+    cameraEl.setAttribute('camera', 'fov', 100);
+    zoomSlider.value = 100;
+    
+    // 4. ПЕРЕЗАПУСК ДВИЖКА
+    // Мы на секунду "встряхнем" систему, чтобы она снова начала искать маркеры
     status.style.display = 'block';
-    status.innerHTML = "Синхронизация AR...";
+    status.innerHTML = "Возврат в AR...";
 
     setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
+        // Команда на перерисовку сцены
+        sceneEl.renderer.clear(); 
         status.innerHTML = "Наведите на маркеры";
+        
+        // Если видео 1 играет за кадром (звук есть, а картинки нет) — стопаем его
         if(video1) {
             video1.pause();
             video1.currentTime = 0;
         }
-    }, 300);
+    }, 500);
 });
 
 // ==========================================
@@ -243,50 +229,3 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
-
-// ==========================================
-// БЛОК 8: Масштабирование (Зум) моделей пальцами
-// ==========================================
-let initialDist = 0;
-let initialScale = 1;
-
-window.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 2) {
-        // Запоминаем начальное расстояние между пальцами
-        initialDist = Math.hypot(
-            e.touches[0].pageX - e.touches[1].pageX,
-            e.touches[0].pageY - e.touches[1].pageY
-        );
-        
-        // Определяем, какую модель сейчас зумим
-        let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
-        if (active) {
-            initialScale = active.getAttribute('scale').x;
-        }
-    }
-});
-
-window.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 2) {
-        let active = status.innerHTML.includes("модель 1") ? model1 : (status.innerHTML.includes("модель 2") ? freeModel : null);
-        
-        if (active) {
-            let currentDist = Math.hypot(
-                e.touches[0].pageX - e.touches[1].pageX,
-                e.touches[0].pageY - e.touches[1].pageY
-            );
-            
-            // Коэффициент изменения (чувствительность)
-            let zoomFactor = currentDist / initialDist;
-            let newScale = initialScale * zoomFactor;
-
-            // Ограничиваем зум, чтобы модель не исчезла или не стала на весь экран
-            newScale = Math.min(Math.max(newScale, 0.2), 5); 
-
-            active.setAttribute('scale', { x: newScale, y: newScale, z: newScale });
-        }
-    }
-});
-
-
-
