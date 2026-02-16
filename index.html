@@ -91,14 +91,14 @@
         <a-videosphere id="sky-portal" src="#v360" visible="false" rotation="0 -90 0" radius="100"></a-videosphere>
 
         
-    <a-entity id="venus-portal-world" visible="false" position="0 0 -4">
+    <a-entity id="venus-portal-world" visible="false" position="0 0 0">
     
     <a-entity id="venus-splat-portal"> 
         
         <a-entity 
             gaussian_splatting="src: venus.splat; cutOff: 0.05;" 
             scale="2 2 2"
-            position="0 0 0"> 
+            position="0 0 -4"> 
         </a-entity>
         
     </a-entity>
@@ -110,6 +110,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
