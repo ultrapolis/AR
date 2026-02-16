@@ -132,10 +132,14 @@ enter360Btn.addEventListener('click', () => {
 
     // РАЗДЕЛЯЕМ ЛОГИКУ: куда мы входим?
     if (status.innerHTML.includes("Venus")) {
-        // 1. Мы входим в 3D-мир Венеры
+        // Мы входим в 3D-мир Венеры
         document.querySelector('#venus-portal-world').setAttribute('visible', 'true');
         skyPortal.setAttribute('visible', 'false');
-        playPauseBtn.style.display = 'none'; // Скрываем кнопку паузы (для 3D она не нужна)
+        playPauseBtn.style.display = 'none'; 
+        
+        // --- ВОТ ЭТОТ ПИНОК ---
+        setTimeout(() => { cameraEl.setAttribute('camera', 'fov', zoomSlider.value); }, 100);
+        
     } else {
         // 2. Мы входим в Видео 360
         skyPortal.setAttribute('visible', 'true');
@@ -145,7 +149,8 @@ enter360Btn.addEventListener('click', () => {
         video360.currentTime = 0;
         setTimeout(() => { video360.play(); }, 150);
     }
-    
+
+ 
     status.style.display = 'none'; 
 });
 
@@ -287,3 +292,4 @@ window.addEventListener('touchmove', (e) => {
         prevPanY = currentPanY;
     }
 });
+
