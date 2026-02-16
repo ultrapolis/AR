@@ -197,48 +197,93 @@ exit360Btn.addEventListener('click', () => {
 });
 
 // ==========================================
-// БЛОК 7: Вращение (Исправленный)
+// БЛОК 7: Управление (Вращение 1 пальцем + Перемещение 2 пальцами)
 // ==========================================
 let isDragging = false;
+let isPanning = false; // Режим перемещения
 let prevX = 0; let prevY = 0;
+let prevPanX = 0; let prevPanY = 0;
 
 window.addEventListener('touchstart', (e) => { 
-    // ВАЖНО: Если палец на ползунке зума или кнопке — мы не вращаем сцену!
+    // Игнорируем нажатия, если пальцы на ползунке зума или кнопках
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
     
-    isDragging = true; 
-    prevX = e.touches[0].clientX; 
-    prevY = e.touches[0].clientY; 
+    if (e.touches.length === 1) {
+        // Один палец — включаем вращение
+        isDragging = true;
+        isPanning = false;
+        prevX = e.touches[0].clientX; 
+        prevY = e.touches[0].clientY; 
+    } else if (e.touches.length === 2) {
+        // Два пальца — включаем перемещение
+        isDragging = false;
+        isPanning = true;
+        // Находим центр между двумя пальцами
+        prevPanX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        prevPanY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    }
 });
 
-window.addEventListener('touchend', () => isDragging = false);
+window.addEventListener('touchend', (e) => { 
+    if (e.touches.length === 0) {
+        isDragging = false;
+        isPanning = false;
+    } else if (e.touches.length === 1) {
+        // Если отпустили один палец из двух — возвращаемся к вращению
+        isPanning = false;
+        isDragging = true;
+        prevX = e.touches[0].clientX; 
+        prevY = e.touches[0].clientY; 
+    }
+});
 
 window.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
+    if (!isDragging && !isPanning) return;
     
-    // Определяем, какую модель сейчас вращаем
+    // Определяем, какую модель сейчас трогаем
     let active = null;
-    if (document.querySelector('#venus-portal-world').getAttribute('visible') === 'true' || 
-        document.querySelector('#venus-portal-world').getAttribute('visible') === true) {
-        active = document.querySelector('#venus-splat-portal'); // Крутим Венеру в портале
+    const portalWorld = document.querySelector('#venus-portal-world');
+    
+    if (portalWorld && (portalWorld.getAttribute('visible') === 'true' || portalWorld.getAttribute('visible') === true)) {
+        active = document.querySelector('#venus-splat-portal');
     } else if (status.innerHTML.includes("модель 1")) {
         active = model1;
     } else if (status.innerHTML.includes("модель 2")) {
         active = freeModel;
     }
     
-    if (active) {
+    if (!active) return;
+
+    if (isDragging && e.touches.length === 1) {
+        // --- ЛОГИКА ВРАЩЕНИЯ (1 ПАЛЕЦ) ---
         let rot = active.getAttribute('rotation') || {x: 0, y: 0, z: 0};
         active.setAttribute('rotation', { 
             x: rot.x + (e.touches[0].clientY - prevY) * 0.5, 
             y: rot.y + (e.touches[0].clientX - prevX) * 0.8, 
             z: rot.z 
         });
+        prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+        
+    } else if (isPanning && e.touches.length === 2) {
+        // --- ЛОГИКА ПЕРЕМЕЩЕНИЯ (2 ПАЛЬЦА) ---
+        let currentPanX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        let currentPanY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        
+        let deltaX = currentPanX - prevPanX;
+        let deltaY = currentPanY - prevPanY;
+        
+        let pos = active.getAttribute('position') || {x: 0, y: 0, z: 0};
+        
+        // Скорость перемещения (0.01 — это чувствительность свайпа)
+        let panSpeed = 0.01; 
+        
+        active.setAttribute('position', { 
+            x: pos.x + (deltaX * panSpeed), 
+            y: pos.y - (deltaY * panSpeed), // Минус нужен, чтобы Венера послушно шла за пальцами
+            z: pos.z 
+        });
+        
+        prevPanX = currentPanX; 
+        prevPanY = currentPanY;
     }
-    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
-
-
-
-
-
