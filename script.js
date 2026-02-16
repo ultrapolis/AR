@@ -197,17 +197,36 @@ exit360Btn.addEventListener('click', () => {
 });
 
 // ==========================================
-// БЛОК 7: Вращение
+// БЛОК 7: Вращение (Исправленный)
 // ==========================================
 let isDragging = false;
 let prevX = 0; let prevY = 0;
-window.addEventListener('touchstart', (e) => { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; });
+
+window.addEventListener('touchstart', (e) => { 
+    // ВАЖНО: Если палец на ползунке зума или кнопке — мы не вращаем сцену!
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    
+    isDragging = true; 
+    prevX = e.touches[0].clientX; 
+    prevY = e.touches[0].clientY; 
+});
+
 window.addEventListener('touchend', () => isDragging = false);
+
 window.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
-    let active = status.innerHTML.includes("модель 1") ? model1 : 
-                 (status.innerHTML.includes("модель 2") ? freeModel : 
-                 (status.innerHTML.includes("Venus") ? venusModel : null));
+    
+    // Определяем, какую модель сейчас вращаем
+    let active = null;
+    if (document.querySelector('#venus-portal-world').getAttribute('visible') === 'true' || 
+        document.querySelector('#venus-portal-world').getAttribute('visible') === true) {
+        active = document.querySelector('#venus-splat-portal'); // Крутим Венеру в портале
+    } else if (status.innerHTML.includes("модель 1")) {
+        active = model1;
+    } else if (status.innerHTML.includes("модель 2")) {
+        active = freeModel;
+    }
+    
     if (active) {
         let rot = active.getAttribute('rotation') || {x: 0, y: 0, z: 0};
         active.setAttribute('rotation', { 
@@ -218,6 +237,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
