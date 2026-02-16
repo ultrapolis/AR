@@ -11,7 +11,7 @@ const video360 = document.querySelector('#v360');
 const model1 = document.querySelector('#model-to-rotate');
 const worldContainer = document.querySelector('#world-container');
 const freeModel = document.querySelector('#free-model');
-const venusModel = document.querySelector('#venus-model'); 
+const venusModel = document.querySelector('#venus-splat-portal');
 const closeBtn = document.querySelector('#close-btn');
 
 const skyPortal = document.querySelector('#sky-portal');
@@ -218,6 +218,7 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
 
