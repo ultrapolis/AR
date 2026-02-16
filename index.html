@@ -6,10 +6,35 @@
     <title>AR Book Project</title>
     
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
-<script src="https://quadjr.github.io/aframe-gaussian-splatting/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://quadjr.github.io/aframe-gaussian-splatting/index.js"></script>
 
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Прячем кнопку VR режима */
+        .a-enter-vr { display: none !important; }
+        
+        /* Стили для слайдера зума внизу */
+        #zoom-slider {
+            -webkit-appearance: none;
+            width: 80%; 
+            max-width: 400px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            outline: none;
+        }
+        #zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #00cfd5;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
     <div id="status">Подготовка ресурсов...</div>
@@ -71,12 +96,16 @@
         </a-entity>
 
         <a-videosphere id="sky-portal" src="#v360" visible="false" rotation="0 -90 0" radius="100"></a-videosphere>
+
+        <a-entity id="venus-portal-world" visible="false" position="0 1.6 -2">
+            <a-entity id="venus-splat-portal" 
+                gaussian_splatting="src: venus.splat; cutOff: 0.05;" 
+                scale="2 2 2">
+            </a-entity>
+        </a-entity>
+        
     </a-scene>
 
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
