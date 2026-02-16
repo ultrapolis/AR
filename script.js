@@ -91,27 +91,37 @@ closeBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// БЛОК 4: Поиск портала (Таргет 3)
+// БЛОК 4: Поиск порталов (Видео и Венера)
 // ==========================================
 document.querySelector('#target3').addEventListener("targetFound", () => {
-    if (skyPortal.getAttribute('visible') === false) {
-        status.innerHTML = "Маркер портала найден";
-        enter360Btn.style.display = 'block';
-    }
+    status.innerHTML = "Маркер портала найден";
+    if (skyPortal.getAttribute('visible') === false) enter360Btn.style.display = 'block';
 });
 document.querySelector('#target3').addEventListener("targetLost", () => {
     enter360Btn.style.display = 'none';
 });
 
+// Добавляем появление кнопки для маркера Венеры
+document.querySelector('#target4').addEventListener("targetFound", () => { 
+    status.innerHTML = "Venus"; 
+    // Красный шарик можешь убрать из index.html, когда убедишься, что всё работает
+    if (document.querySelector('#venus-portal-world').getAttribute('visible') === false) {
+        enter360Btn.style.display = 'block';
+    }
+});
+document.querySelector('#target4').addEventListener("targetLost", () => {
+    enter360Btn.style.display = 'none';
+});
+
 // ==========================================
-// БЛОК 5: ВХОД В ПОРТАЛ
+// БЛОК 5: ВХОД В ПОРТАЛ (Умный выбор)
 // ==========================================
 enter360Btn.addEventListener('click', () => {
     enter360Btn.style.display = 'none';
     exit360Btn.style.display = 'block';
     uiBottom.style.display = 'block';
-    playPauseBtn.innerHTML = "PAUSE";
     
+    // Включаем гироскоп для обзора головой
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(state => {
             if (state === 'granted') cameraEl.setAttribute('look-controls', 'enabled: true');
@@ -120,19 +130,30 @@ enter360Btn.addEventListener('click', () => {
         cameraEl.setAttribute('look-controls', 'enabled: true');
     }
 
-    skyPortal.setAttribute('visible', 'true');
-    video360.currentTime = 0;
-    setTimeout(() => { video360.play(); }, 150);
+    // РАЗДЕЛЯЕМ ЛОГИКУ: куда мы входим?
+    if (status.innerHTML.includes("Venus")) {
+        // 1. Мы входим в 3D-мир Венеры
+        document.querySelector('#venus-portal-world').setAttribute('visible', 'true');
+        skyPortal.setAttribute('visible', 'false');
+        playPauseBtn.style.display = 'none'; // Скрываем кнопку паузы (для 3D она не нужна)
+    } else {
+        // 2. Мы входим в Видео 360
+        skyPortal.setAttribute('visible', 'true');
+        document.querySelector('#venus-portal-world').setAttribute('visible', 'false');
+        playPauseBtn.style.display = 'inline-block';
+        playPauseBtn.innerHTML = "PAUSE";
+        video360.currentTime = 0;
+        setTimeout(() => { video360.play(); }, 150);
+    }
+    
     status.style.display = 'none'; 
 });
 
 playPauseBtn.addEventListener('click', () => {
     if (video360.paused) {
-        video360.play();
-        playPauseBtn.innerHTML = "PAUSE";
+        video360.play(); playPauseBtn.innerHTML = "PAUSE";
     } else {
-        video360.pause();
-        playPauseBtn.innerHTML = "PLAY";
+        video360.pause(); playPauseBtn.innerHTML = "PLAY";
     }
 });
 
@@ -141,13 +162,16 @@ zoomSlider.addEventListener('input', (e) => {
 });
 
 // ==========================================
-// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА (с перезапуском AR)
+// БЛОК 6: ВЫХОД ИЗ ПОРТАЛА 
 // ==========================================
 exit360Btn.addEventListener('click', () => {
     exit360Btn.style.display = 'none';
     uiBottom.style.display = 'none';
     
+    // Выключаем ОБА портала
     skyPortal.setAttribute('visible', 'false');
+    document.querySelector('#venus-portal-world').setAttribute('visible', 'false');
+    
     video360.pause();
     video360.currentTime = 0;
     
@@ -167,11 +191,7 @@ exit360Btn.addEventListener('click', () => {
     setTimeout(() => {
         sceneEl.renderer.clear(); 
         status.innerHTML = "Наведите на маркеры";
-        
-        if(video1) {
-            video1.pause();
-            video1.currentTime = 0;
-        }
+        if(video1) { video1.pause(); video1.currentTime = 0; }
         window.dispatchEvent(new Event('resize'));
     }, 500);
 });
@@ -198,5 +218,6 @@ window.addEventListener('touchmove', (e) => {
     }
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
 });
+
 
 
