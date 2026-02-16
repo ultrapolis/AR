@@ -51,9 +51,9 @@
     <button id="exit-360" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:10007; padding:15px 25px; background:#ff4444; color:white; border:none; border-radius:30px; font-weight:bold;">ВЫЙТИ ИЗ 360</button>
     <button id="close-btn" style="display:none; position:fixed; top:20px; right:20px; z-index:10005; padding:15px; background:rgba(0,0,0,0.5); color:white; border:2px solid white; border-radius:50%; width:50px; height:50px;">✕</button>
 
-    <a-scene 
+<a-scene 
     id="scene"
-    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no;" 
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
     embedded 
     renderer="colorManagement: true; sortObjects: true; antialias: false;" 
     vr-mode-ui="enabled: false">
@@ -86,18 +86,11 @@
         </a-entity>
 
         <a-entity id="target4" mindar-image-target="targetIndex: 4">
-            <a-sphere radius="0.05" color="red" position="0 0 0"></a-sphere>
-        
-            <a-entity id="venus-model" 
-                gaussian_splatting="src: venus.splat; cutOff: 0.05;" 
-                scale="1.5 1.5 1.5" 
-                position="0 0 0">
-            </a-entity>
-        </a-entity>
+    </a-entity>
 
         <a-videosphere id="sky-portal" src="#v360" visible="false" rotation="0 -90 0" radius="100"></a-videosphere>
 
-        <a-entity id="venus-portal-world" visible="false" position="0 1.6 -2">
+        <a-entity id="venus-portal-world" visible="false" position="0 0 -2">
             <a-entity id="venus-splat-portal" 
                 gaussian_splatting="src: venus.splat; cutOff: 0.05;" 
                 scale="2 2 2">
@@ -109,3 +102,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
